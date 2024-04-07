@@ -1,0 +1,78 @@
+$background-image-path: "../assets/test-bg.jpg";
+
+.welcome-content {
+  display: flex;
+  min-height: 100vh;
+  min-width: 100vw;
+
+  .welcome-background {
+    float: right;
+    background-image: url($background-image-path);
+    background-size: cover;
+    background-position: center;
+    position: absolute;
+    width: 70vw;
+    height: 100%;
+    right: 0;
+    z-index: -1;
+  }
+
+  .left-strip {
+    background-color: rgba(0, 0, 0, 1);
+    padding: 2rem;
+    width: 30vw;
+    height: 100vh;
+    float: left;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+
+    .strip-top {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 2rem;
+      margin-bottom: auto;
+
+      .tagline {
+        color: #00c3ff7d;
+        margin-top: 2rem;
+        text-align: center;
+        width: 60%;
+        font-weight: 400;
+        font-size: 20px;
+      }
+    }
+
+    .strip-bottom {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: auto;
+      margin-bottom: 0;
+
+      .btn {
+        border-radius: 64px;
+        --bs-btn-hover-bg: #00c2ff;
+        --bs-btn-color: #00c2ff;
+        --bs-btn-border-color: #00c2ff;
+        --bs-btn-active-bg: #00c2ff;
+        --bs-btn-active-border-color: #00c2ff;
+        width: 100%;
+        height: 50px;
+      }
+
+      .create-account-button {
+        background: #00c2ff;
+        color: black;
+      }
+
+      .already-have-an-account {
+        color: #00c2ff;
+        margin-top: 1rem;
+      }
+    }
+  }
+}
