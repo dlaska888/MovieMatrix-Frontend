@@ -76,3 +76,10 @@ $background-image-path: "../assets/test-bg.jpg";
     }
   }
 }
+
+@media screen and (max-width: 768px) {
+  .welcome-content .left-strip {
+    width: 100vw;
+  }
+}
+
