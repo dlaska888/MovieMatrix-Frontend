@@ -1,0 +1,132 @@
+body {
+	overflow-y: auto;
+	background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.7)),
+		url("../assets/test-bg2.jpg");
+}
+
+.movies-container {
+	position: relative;
+	top: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+}
+
+.movies-block {
+	background-color: rgba(0, 0, 0, 0.5);
+	padding: 20px;
+	border-radius: 20px;
+	width: 80%;
+	box-shadow: 0px 2px 15px 2px rgba(255, 255, 255, 0.2);
+}
+
+.movies-header {
+	background-color: #00c2ff;
+	padding: 5px;
+	border-radius: 10px;
+	margin-bottom: 30px;
+	justify-content: space-between;
+	display: flex;
+	align-items: center;
+
+	@media screen and (max-width: 768px) {
+		flex-direction: column;
+	}
+}
+
+.movies-header h1 {
+	color: #000000;
+	font-family: "Arial", sans-serif;
+	font-weight: normal;
+	margin: 5px;
+}
+
+.movies-header .search_bar {
+	position: relative;
+}
+
+.movies-header .search_bar > input {
+	border-radius: 1em;
+	background-color: #242424;
+	border: #242424;
+	width: 35vw;
+	font-size: 1em;
+	padding: 0.7em;
+	color: white;
+
+  @media screen and (max-width: 768px){
+    width: 100%;
+  }
+}
+
+.movies-header .search_bar > i {
+	color: #00c2ff;
+	position: absolute;
+	right: 10px;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+.rows {
+	overflow-y: auto;
+	max-height: 65vh;
+	overflow-x: hidden;
+}
+.card {
+	background-position: center;
+	background-size: cover;
+  background-repeat: no-repeat;
+	border: 2px solid #00c2ff;
+}
+
+.card-body {
+	position: relative;
+}
+
+p {
+	color: white;
+	font-weight: bold;
+	font-size: 24px;
+	font-family: "Cursive", cursive;
+	position: absolute;
+	bottom: 0;
+	right: 5px;
+	z-index: 1;
+}
+
+.card::before {
+	content: "";
+	display: block;
+	padding-top: 60%;
+  width: 300px;
+  height: 500px;
+}
+
+.card::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+}
+
+.btn-save {
+	margin-top: 1em;
+	background: #000000;
+	border-radius: 25px;
+	color: #00c2ff;
+	border-color: #00c2ff;
+	padding: 0.5em 4em;
+	font-family: "Arial", sans-serif;
+	font-size: 25px;
+	font-weight: bold;
+	cursor: pointer;
+	transition: background-color 0.3s;
+}
+
+.btn-save:hover {
+	background: #00c2ff;
+}

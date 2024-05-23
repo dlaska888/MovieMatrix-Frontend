@@ -24,10 +24,21 @@ class ApiClient {
 		return await this.#getResponse(url);
 	}
 
-    async getMovieDetails(movieId) {
+	async getMovieDetails(movieId) {
         const url = `${this.baseUrl}/movie/${movieId}?api_key=${this.apiKey}`;
         return await this.#getResponse(url);
-    }   
+    } 
+
+	async getGenreList() {
+		const url = `${this.baseUrl}/genre/movie/list?api_key=${this.apiKey}`;
+		return await this.#getResponse(url);
+	}
+
+	async getMoviesBySearch(query) {
+		const url = `${this.baseUrl}/search/movie?api_key=${this.apiKey}&query=${query}`;
+		return await this.#getResponse(url);
+	}
+      
 
 	async #getResponse(url) {
 		const response = await fetch(url);
