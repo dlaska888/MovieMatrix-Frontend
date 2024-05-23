@@ -1,5 +1,46 @@
+$theme-colors: (
+  "primary": #00c2ff,
+  "danger": white
+);
+
 @import "../../node_modules/bootstrap/scss/bootstrap";
 
-body{
-    height: 100vh;
+//change
+
+body {
+	height: 100vh;
+}
+
+// utils
+
+.flex-center {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+@media (max-width: 768px) {
+	.hide-mobile {
+		display: none !important;
+	}
+}
+ 
+@media (min-width: 769px) {
+	.hide-desktop {
+		display: none !important;
+	}
+}
+
+.hide-scroll {
+	-ms-overflow-style: none; /* Internet Explorer 10+ */
+	scrollbar-width: none; /* Firefox */
+
+	&::-webkit-scrollbar,
+	&::-webkit-scrollbar {
+		display: none; /* Chrome, Safari, and Opera */
+	}
+}
+
+.text-justify {
+	text-align: justify;
 }
