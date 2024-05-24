@@ -27,7 +27,14 @@ class ApiClient {
 	async getMovieDetails(movieId) {
         const url = `${this.baseUrl}/movie/${movieId}?api_key=${this.apiKey}`;
         return await this.#getResponse(url);
-    } 
+    }
+
+	async getMovieDirector(movieId) {
+		const url = `${this.baseUrl}/movie/${movieId}/credits?api_key=${this.apiKey}`;
+		const data = await this.#getResponse(url);
+		const director = data.crew.find((member) => member.job === "Director");
+		return director;
+	}
 
 	async getGenreList() {
 		const url = `${this.baseUrl}/genre/movie/list?api_key=${this.apiKey}`;
@@ -38,7 +45,16 @@ class ApiClient {
 		const url = `${this.baseUrl}/search/movie?api_key=${this.apiKey}&query=${query}`;
 		return await this.#getResponse(url);
 	}
-      
+	
+	async getWatchProviders(movieId) {
+		const url = `${this.baseUrl}/movie/${movieId}/watch/providers?api_key=${this.apiKey}`;
+		return await this.#getResponse(url);
+	}
+
+	async getWatchedMovies() {
+		const url = `${this.baseUrl}/account/1/rated/movies?api_key=${this.apiKey}`;
+		return await this.#getResponse(url);
+	}
 
 	async #getResponse(url) {
 		const response = await fetch(url);

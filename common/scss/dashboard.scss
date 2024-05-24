@@ -83,6 +83,13 @@ body {
 		display: inline;
 		border-bottom: 3px solid #00c2ff;
 	}
+
+	.watch-provider-logo {
+		width: 200px;
+		height: 200px;
+		border-radius: 1rem;
+		border: 2px solid #ffffffa8;
+	}
 }
 
 .page-content {
@@ -125,8 +132,7 @@ body {
 
 	#movies-container {
 		overflow-y: scroll;
-		height: calc(100vh - 150px);
-		max-height: calc(100vh - 150px);
+		height: calc(100vh - 175px);
 	}
 
 	.movie-card {
@@ -178,4 +184,34 @@ body {
 			}
 		}
 	}
+}
+
+.search_bar {
+	position: relative;
+	display: flex;
+	width: 40%;
+	min-width: 300px;
+}
+
+.search_bar > input {
+	border-radius: 1em;
+	background-color: #000;
+	border: #242424;
+	width: 35vw;
+	font-size: 1em;
+	padding: 0.7em;
+	color: white;
+
+	@media screen and (max-width: 768px) {
+		width: 100%;
+	}
+
+}
+
+.search_bar > i {
+	color: #00c2ff;
+	position: absolute;
+	right: 3%;
+	top: 35%;
+	transform: translateY(-50%);
 }

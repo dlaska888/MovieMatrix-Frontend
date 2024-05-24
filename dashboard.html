@@ -7,7 +7,7 @@
   <title>Movie Matrix</title>
   <link href="/common/css/dashboard.css" rel="stylesheet" />
   <script src="/node_modules/bootstrap/dist/js/bootstrap.min.js" defer></script>
-  <script type="module" src="/common/js/dashboard.js" defer></script>
+  <script type="module" src="/common/js/dashboard/dashboard.js" defer></script>
   <link href="https://fonts.cdnfonts.com/css/amazon-ember" rel="stylesheet">
 </head>
 
@@ -18,9 +18,9 @@
     </div>
     <div class="menu">
       <div class="menu-upper">
-        <a href="#" class="active"><i class="bi bi-house"></i> Home</a>
-        <a href="#"><i class="bi bi-compass"></i> Discover</a>
-        <a href="#"><i class="bi bi-clock"></i> Watched</a>
+        <a id="nav-home-btn" class="nav-btn active"><i class="bi bi-house"></i> Home</a>
+        <a id="nav-discover-btn" class="nav-btn"><i class="bi bi-compass"></i> Discover</a>
+        <a id="nav-watched-btn" class="nav-btn"><i class="bi bi-clock"></i> Watched</a>
       </div>
       <div class="menu-bottom">
         <a href="#"><i class="bi bi-person"></i> My Profile</a>
@@ -32,20 +32,8 @@
         <span>user@gmail.com</span>
       </div> -->
   </div>
-  <div class="page-content my-3 flex-column justify-content-center">
-    <div class="top-options gap-3 mb-5 mx-2 hide-scroll">
-      <button id="popular" type="button" class="option active">Popular</button>
-      <button id="trending" type="button" class="option">Trending</button>
-      <button id="top-rated" type="button" class="option">Top Rated</button>
-      <button type="button" class="option">Series</button>
-      <button type="button" class="option">Horror</button>
-    </div>
-    <!-- <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling"
-      aria-controls="offcanvasScrolling">Enable body scrolling</button> -->
-
-    <div class="container-fluid d-flex justify-content-center">
-      <div id="movies-container" class="row justify-content-center gap-4 gap-md-5 w-100 hide-scroll"></div>
-    </div>
+  <div id="page-content" class="page-content flex-column pt-4 pb-2">
+    
   </div>
 </body>
 
