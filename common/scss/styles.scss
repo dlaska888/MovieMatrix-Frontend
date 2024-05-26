@@ -1,7 +1,8 @@
 $theme-colors: (
   "primary": #00c2ff,
-  "danger": white
 );
+
+$primary: #00c2ff;
 
 @import "../../node_modules/bootstrap/scss/bootstrap";
 

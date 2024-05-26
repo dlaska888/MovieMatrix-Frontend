@@ -1,7 +1,6 @@
 import ApiClient from "../helpers/ApiClient.js";
+import MockUserAPI from "../mock/MockUserApi.js";
 import Dashboard from "./dashboard.js";
-
-const userGenres = [28, 10749, 35];
 
 const Discover = (function () {
 	const client = new ApiClient();

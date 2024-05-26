@@ -1,8 +1,6 @@
 import ApiClient from "../helpers/ApiClient.js";
 import Dashboard from "./dashboard.js";
 
-const userGenres = [28, 10749, 35];
-
 const Watched = (function () {
 	const client = new ApiClient();
 

@@ -17,7 +17,6 @@ const Dashboard = (function () {
 	function init() {
 		Home.init();
 		initNavButtons();
-		console.log(userApi.getCurrentUser());
 	}
 
 	function initNavButtons() {
@@ -115,7 +114,6 @@ const Dashboard = (function () {
 		input.addEventListener("input", (event) => {
 			event.preventDefault();
 			clearTimeout(searchTimer); // Clear the previous timer
-
 			searchTimer = setTimeout(() => {
 				search(event.target.value.trim());
 			}, 500); // Adjust the delay as needed
@@ -141,6 +139,25 @@ const Dashboard = (function () {
 		} finally {
 			loading = false; // Re-enable the button after fetch completes
 		}
+	}
+
+	async function renderSettingsButton() {
+		let button = document.createElement("div");
+		button.innerHTML = `
+		<div class="dropup position-absolute bottom-0 end-0 m-5">
+			<button type="button" class="btn btn-success btn-lg dropdown-toggle hide-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">
+				<i class="fs-1 bi bi-gear"></i>
+				<span class="visually-hidden">Add Category</span>
+			</button>
+			<ul class="dropdown-menu">
+				<li>
+					<a class="dropdown-item" href="moviesChoice.html">Change movies</a>
+					<a class="dropdown-item" href="genresChoice.html">Change genres</a>
+				</li>
+			</ul>
+		</div>`;
+		button = button.firstElementChild;
+		pageContent.appendChild(button);
 	}
 
 	function renderMovies(movies) {
@@ -309,6 +326,12 @@ const Dashboard = (function () {
 		const region = await userRegionResolver.getUserRegion();
 		const watchForRegion = watchProviders.results[region];
 
+		if (!watchForRegion) {
+			const noWatchProvidersElement = document.createElement("div");
+			noWatchProvidersElement.innerHTML = `<h2 class="col-12 text-center">No watch providers found in your region</h2>`;
+			return noWatchProvidersElement.firstElementChild;
+		}
+
 		const watchListConcat = [
 			...[
 				...(watchForRegion.flatrate !== undefined
@@ -338,12 +361,13 @@ const Dashboard = (function () {
 		watchListConcat
 			.map((provider) => {
 				return `
-			<div class="col flex-center">
+			<div class="col flex-center flex-column gap-4">
 				<a href="${watchForRegion.link}" target="_blank">
 					<img src="https://image.tmdb.org/t/p/w500${provider.logo_path}" alt="${provider.provider_name}" class="watch-provider-logo">
 				</a>
-			</div>
-		`;
+				<h5 class="text-center">${provider.provider_name}</h5>
+
+			</div>`;
 			})
 			.forEach((provider) => {
 				watchContainer.innerHTML += provider;
@@ -359,6 +383,7 @@ const Dashboard = (function () {
 		init,
 		renderOptionButtons,
 		renderSearchBar,
+		renderSettingsButton,
 		renderMovies,
 		renderMovieDetails,
 		renderMovieDetailsAbout,

@@ -205,7 +205,6 @@ body {
 	@media screen and (max-width: 768px) {
 		width: 100%;
 	}
-
 }
 
 .search_bar > i {
@@ -214,4 +213,18 @@ body {
 	right: 3%;
 	top: 35%;
 	transform: translateY(-50%);
+}
+
+.dropup{
+	background-color: #1a1616;
+	border: 2px solid #00c2ff;
+	border-radius: 1rem;
+}
+
+.dropup .hide-toggle.dropdown-toggle::after {
+	display: none !important;
+}
+
+.dropup * {
+	border: none;
 }

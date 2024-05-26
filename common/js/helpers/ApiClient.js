@@ -19,15 +19,15 @@ class ApiClient {
 		return await this.#getResponse(url);
 	}
 
-	async getMoviesByGenre(genreId) {
-		const url = `${this.baseUrl}/discover/movie?api_key=${this.apiKey}&with_genres=${genreId}`;
+	async getMoviesByGenres(genreId) {
+		const url = `${this.baseUrl}/discover/movie?api_key=${this.apiKey}&with_genres=${genreId.join(",")}`;
 		return await this.#getResponse(url);
 	}
 
 	async getMovieDetails(movieId) {
-        const url = `${this.baseUrl}/movie/${movieId}?api_key=${this.apiKey}`;
-        return await this.#getResponse(url);
-    }
+		const url = `${this.baseUrl}/movie/${movieId}?api_key=${this.apiKey}`;
+		return await this.#getResponse(url);
+	}
 
 	async getMovieDirector(movieId) {
 		const url = `${this.baseUrl}/movie/${movieId}/credits?api_key=${this.apiKey}`;
@@ -45,15 +45,43 @@ class ApiClient {
 		const url = `${this.baseUrl}/search/movie?api_key=${this.apiKey}&query=${query}`;
 		return await this.#getResponse(url);
 	}
-	
+
 	async getWatchProviders(movieId) {
 		const url = `${this.baseUrl}/movie/${movieId}/watch/providers?api_key=${this.apiKey}`;
 		return await this.#getResponse(url);
 	}
 
-	async getWatchedMovies() {
-		const url = `${this.baseUrl}/account/1/rated/movies?api_key=${this.apiKey}`;
-		return await this.#getResponse(url);
+	async getMoviesWithPreferences(movieIds, genreIds) {
+		if (movieIds.length === 0) {
+			return (await this.getMoviesByGenres(genreIds)).results;
+		}
+
+		const similarMovies = [];
+		for (const id of movieIds) {
+			const url = `https://api.themoviedb.org/3/movie/${id}/similar?api_key=${this.apiKey}`;
+			const data = await this.#getResponse(url);
+			similarMovies.push(...data.results);
+		}
+
+		const uniqueMovies = similarMovies.filter((movie, index, self) => {
+			return index === self.findIndex((m) => (
+				movie.id === m.id
+			));
+		});
+
+		uniqueMovies.sort((a, b) => b.popularity - a.popularity);
+
+		return uniqueMovies;
+	}
+
+	async getMoviesByIds(ids) {
+		const movies = [];
+		for (const id of ids) {
+			const url = `${this.baseUrl}/movie/${id}?api_key=${this.apiKey}`;
+			const data = await this.#getResponse(url);
+			movies.push(data);
+		}
+		return movies;
 	}
 
 	async #getResponse(url) {

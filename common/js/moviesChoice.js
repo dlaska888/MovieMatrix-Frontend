@@ -12,8 +12,13 @@ const MoviesChoice = (function () {
 	function init() {
 		client
 			.getTrendingMovies()
-			.then((res) => {
-				renderMovies(res.results);
+			.then(async (res) => {
+				const user = userApi.getCurrentUser();
+				const userMovies = user.movies ? await client.getMoviesByIds(user.movies) : [];
+				renderMovies(userMovies.concat(res.results));
+				userMovies.forEach((movie) => {
+					selectMovie(movie.id);
+				});
 			})
 			.catch((error) => {
 				console.error("Error:", error);
@@ -28,8 +33,8 @@ const MoviesChoice = (function () {
 		saveButton.addEventListener("click", () => {
 			const user = userApi.getCurrentUser();
 			user.movies = selectedMovies;
-			user.firstTimeLogin = false;
 			userApi.updateUser(user.id, user);
+
 			NotificationService.notify("Genres saved successfully!", "green");
 			setTimeout(() => {
 				window.location.href = "dashboard.html";
@@ -85,7 +90,7 @@ const MoviesChoice = (function () {
 			let movieCard = document.createElement("div");
 			movieCard.innerHTML = `
         <div class="col-xxl-3 col-xl-4 col-md-6 mb-4">
-            <div class="card">
+            <div id="card-${movie.id}" class="card">
                 <div class="card-body">
                     <p>${movie.title}</p>
                 </div>
@@ -97,7 +102,6 @@ const MoviesChoice = (function () {
 			card.style.backgroundImage = `url(https://image.tmdb.org/t/p/w300${movie.poster_path})`;
 			card.addEventListener("click", () => {
 				if (selectedMovies.includes(movie.id)) {
-					card.classList.remove("selected");
 					unselectMovie(movie.id);
 					return;
 				}
@@ -110,7 +114,6 @@ const MoviesChoice = (function () {
 					return;
 				}
 
-				card.classList.add("selected");
 				selectMovie(movie.id);
 			});
 
@@ -120,12 +123,14 @@ const MoviesChoice = (function () {
 
 	function selectMovie(movieId) {
 		selectedMovies.push(movieId);
+		document.getElementById(`card-${movieId}`).classList.add("selected");
 		document.getElementById("movie-counter").innerHTML =
 			selectedMovies.length;
 	}
 
 	function unselectMovie(movieId) {
 		selectedMovies.splice(selectedMovies.indexOf(movieId), 1);
+		document.getElementById(`card-${movieId}`).classList.remove("selected");
 		document.getElementById("movie-counter").innerHTML =
 			selectedMovies.length;
 	}

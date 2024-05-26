@@ -5,17 +5,21 @@ import NotificationService from "./helpers/NotificationService.js";
 const GenresChoice = (function () {
 	const client = new ApiClient();
 	const userApi = MockUserAPI.getInstance();
-	const selectedGenres = [];
+	let selectedGenres = [];
 
 	function init() {
 		client
 			.getGenreList()
 			.then((res) => {
 				displayGenres(res.genres);
+				userApi.getCurrentUser().genres.forEach((genreId) => {
+					selectGenre(genreId);
+				});
 			})
 			.catch((error) => {
 				console.error("Error:", error);
 			});
+
 		initSaveButton();
 	}
 
@@ -33,12 +37,15 @@ const GenresChoice = (function () {
 			const user = userApi.getCurrentUser();
 			user.genres = selectedGenres;
 			userApi.updateUser(user.id, user);
+
 			NotificationService.notify("Genres saved successfully!", "green");
 			setTimeout(() => {
 				if (user.firstTimeLogin) {
-					window.location.href = "dashboard.html";
-				} else {
 					window.location.href = "moviesChoice.html";
+					user.firstTimeLogin = false;
+					userApi.updateUser(user.id, user);
+				} else {
+					window.location.href = "dashboard.html";
 				}
 			}, 1000);
 		});
@@ -46,13 +53,13 @@ const GenresChoice = (function () {
 
 	function displayGenres(genres) {
 		const genreList = document.getElementById("genre-list");
-		genreList.innerHTML = ""; // Clear the previous results
+		genreList.innerHTML = "";
 
 		genres.forEach((genre) => {
 			let genreCard = document.createElement("div");
 			genreCard.innerHTML = `
 			<div class="col-xxl-3 col-xl-4 col-sm-6 mb-4">
-				<div class="card">
+				<div id="card-${genre.id}" class="card">
 					<div class="card-body">
 						<p>${genre.name}</p>
 					</div>
@@ -61,7 +68,6 @@ const GenresChoice = (function () {
 			genreCard = genreCard.firstElementChild;
 			genreCard.addEventListener("click", () => {
 				if (selectedGenres.includes(genre.id)) {
-					genreCard.firstElementChild.classList.remove("selected");
 					unselectGenre(genre.id);
 					return;
 				}
@@ -74,7 +80,6 @@ const GenresChoice = (function () {
 					return;
 				}
 
-				genreCard.firstElementChild.classList.add("selected");
 				selectGenre(genre.id);
 			});
 			genreList.appendChild(genreCard);
@@ -83,12 +88,14 @@ const GenresChoice = (function () {
 
 	function selectGenre(genreId) {
 		selectedGenres.push(genreId);
+		document.getElementById(`card-${genreId}`).classList.add("selected");
 		document.getElementById("genre-counter").innerHTML =
 			selectedGenres.length;
 	}
 
 	function unselectGenre(genreId) {
 		selectedGenres.splice(selectedGenres.indexOf(genreId), 1);
+		document.getElementById(`card-${genreId}`).classList.remove("selected");
 		document.getElementById("genre-counter").innerHTML =
 			selectedGenres.length;
 	}
