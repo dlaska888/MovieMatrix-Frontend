@@ -18,7 +18,7 @@
       src="/node_modules/bootstrap/dist/js/bootstrap.min.js"
       defer
     ></script>
-    <script src="/common/js/script.js" defer></script>
+    <script src="/common/js/register.js" type="module" defer></script>
   </head>
 
   <body class="bg-black">
@@ -31,13 +31,15 @@
         <a href="/welcome.html" class="close-button">
           <i class="bi bi-x-circle close-icon"></i>
         </a>
-        <form class="login-form text-white">
+        <form id="login-form" class="login-form text-white">
           <div class="form-group">
             <input
               type="text"
               class="input-group mb-3 login-email text-white"
               placeholder="email"
               id="registerEmail"
+              name="email"
+              value="dawid.laska@spoko.pl"
               required
             />
           </div>
@@ -47,6 +49,8 @@
               class="input-group mb-3 login-email"
               placeholder="username"
               id="registerUsername"
+              name="username"
+              value="dawid"
               required
             />
           </div>
@@ -56,6 +60,8 @@
               class="input-group mb-3 login-password"
               placeholder="password"
               id="registerPassword"
+              name="password"
+              value="123"
               required
             />
           </div>
@@ -64,12 +70,13 @@
               type="password"
               class="input-group mb-3 login-password"
               placeholder="confirm password"
-              id="registerPassword"
+              id="registerPasswordConfirm"
+              name="passwordConfirm"
+              value="123"
               required
             />
           </div>
-          <!-- <button type="submit" class="btn btn-primary">Register</button> -->
-          <a href="/login.html" class="btn btn-primary flex-center">Register</a>
+          <button type="submit" class="btn btn-primary flex-center">Register</button>
           <div class="register-footer">
             <p>
               Already have an account ?
@@ -79,5 +86,6 @@
         </form>
       </div>
     </div>
+    <div class="toast-container position-fixed top-0 end-0 p-3"></div>
   </body>
 </html>

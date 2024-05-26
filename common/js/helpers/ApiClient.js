@@ -67,35 +67,3 @@ class ApiClient {
 }
 
 export default ApiClient;
-
-// // Usage example
-// const apiKey = '416e798ec964e2b8b76a4e719640abbb';
-// const client = new ApiClient(apiKey);
-
-// // Get the latest movies
-// client.getLatestMovies()
-//     .then(movies => {
-//         console.log('Latest movies:', movies);
-//     })
-//     .catch(error => {
-//         console.error('Error:', error);
-//     });
-
-// // Get the trending movies
-// client.getTrendingMovies()
-//     .then(movies => {
-//         console.log('Trending movies:', movies);
-//     })
-//     .catch(error => {
-//         console.error('Error:', error);
-//     });
-
-// // Get movies by genre
-// const genreId = 28; // Action genre
-// client.getMoviesByGenre(genreId)
-//     .then(movies => {
-//         console.log('Action movies:', movies);
-//     })
-//     .catch(error => {
-//         console.error('Error:', error);
-//     });

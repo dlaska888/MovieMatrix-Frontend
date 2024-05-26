@@ -1,12 +1,11 @@
 body {
 	overflow-y: auto;
+	min-height: 100vh;
 	background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.7)),
 		url("../assets/test-bg2.jpg");
 }
 
 .genres-container {
-	position: relative;
-	top: 20px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -44,6 +43,10 @@ body {
 	background-image: url("https://i.guim.co.uk/img/media/5907b11541b45eadff9c8b3be59aff50241bc9c2/1263_783_2840_1704/master/2840.jpg?width=1200&height=1200&quality=85&auto=format&fit=crop&s=0d277fc1ab46fc60c004e577bd29836c");
 	background-size: cover;
 	border: 2px solid #00c2ff;
+}
+
+.card.selected{
+	border: 2px solid green;
 }
 
 .card-body {

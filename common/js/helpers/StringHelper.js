@@ -10,5 +10,6 @@ class StringHelper {
         const date = new Date(dateString);
         return date.toLocaleDateString("en", options);
     }
+
 }
 export default StringHelper;

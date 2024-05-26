@@ -1,11 +1,15 @@
 import Home from "./home.js";
 import Discover from "./discover.js";
 import Watched from "./watched.js";
-import ApiClient from "../ApiClient.js";
-import StringHelper from "../StringHelper.js";
+import ApiClient from "../helpers/ApiClient.js";
+import StringHelper from "../helpers/StringHelper.js";
+import UserLocationResolver from "../helpers/UserLocationResolver.js";
+import MockUserAPI from "../mock/MockUserApi.js";
 
 const Dashboard = (function () {
 	const client = new ApiClient();
+	const userApi = MockUserAPI.getInstance();
+	const userRegionResolver = new UserLocationResolver();
 	const pageContent = document.querySelector("#page-content");
 	let loading = false;
 	let searchTimer = null;
@@ -13,6 +17,7 @@ const Dashboard = (function () {
 	function init() {
 		Home.init();
 		initNavButtons();
+		console.log(userApi.getCurrentUser());
 	}
 
 	function initNavButtons() {
@@ -37,6 +42,17 @@ const Dashboard = (function () {
 		const watchedButton = document.querySelector("#nav-watched-btn");
 		watchedButton.addEventListener("click", () => {
 			Watched.init();
+		});
+
+		const profileButton = document.querySelector("#nav-my-profile-btn");
+		profileButton.addEventListener("click", () => {
+			MyProfile.init();
+		});
+
+		const logoutButton = document.querySelector("#nav-logout-btn");
+		logoutButton.addEventListener("click", () => {
+			userApi.logout();
+			window.location.href = "login.html";
 		});
 	}
 
@@ -146,13 +162,9 @@ const Dashboard = (function () {
 
 		movies.forEach(async (movie) => {
 			const movieDetails = await client.getMovieDetails(movie.id);
-			const watchProviders = await client.getWatchProviders(movie.id);
-			if (watchProviders.results.US) {
-				movieDetails.watchProviders =
-					watchProviders.results.US.buy ??
-					watchProviders.results.US.rent ??
-					[];
-			}
+			movieDetails.watchProviders = await client.getWatchProviders(
+				movie.id
+			);
 			movieDetails.director = await client.getMovieDirector(movie.id);
 
 			var movieElement = document.createElement("div");
@@ -241,7 +253,7 @@ const Dashboard = (function () {
 		watchButton.addEventListener("click", async () => {
 			contentSection.innerHTML = "";
 			contentSection.appendChild(
-				renderMovieDetailsWatch(movieDetails.watchProviders)
+				await renderMovieDetailsWatch(movieDetails.watchProviders)
 			);
 		});
 
@@ -293,32 +305,50 @@ const Dashboard = (function () {
 		return aboutSection;
 	}
 
-	function renderMovieDetailsWatch(watchProviders) {
-		console.log(watchProviders);
-		var watchProvidersSection = document.createElement("div");
-		watchProvidersSection.classList.add(
+	async function renderMovieDetailsWatch(watchProviders) {
+		const region = await userRegionResolver.getUserRegion();
+		const watchForRegion = watchProviders.results[region];
+
+		const watchListConcat = [
+			...[
+				...(watchForRegion.flatrate !== undefined
+					? watchForRegion.flatrate
+					: []),
+				...(watchForRegion.rent !== undefined
+					? watchForRegion.rent
+					: []),
+				...(watchForRegion.buy !== undefined ? watchForRegion.buy : []),
+			].filter(
+				(provider, index, self) =>
+					self.findIndex(
+						(p) => p.provider_name === provider.provider_name
+					) === index
+			),
+		];
+
+		const watchContainer = document.createElement("div");
+		watchContainer.classList.add(
 			"row",
 			"g-5",
 			"d-flex",
 			"justify-content-center",
 			"align-items-center",
-			"p-5",
-			"m-5"
+			"pt-5"
 		);
-		watchProviders
+		watchListConcat
 			.map((provider) => {
 				return `
 			<div class="col flex-center">
-				<a href="${provider.url}" target="_blank">
+				<a href="${watchForRegion.link}" target="_blank">
 					<img src="https://image.tmdb.org/t/p/w500${provider.logo_path}" alt="${provider.provider_name}" class="watch-provider-logo">
 				</a>
 			</div>
 		`;
 			})
 			.forEach((provider) => {
-				watchProvidersSection.innerHTML += provider;
+				watchContainer.innerHTML += provider;
 			});
-		return watchProvidersSection;
+		return watchContainer;
 	}
 
 	function clearPageContent() {
@@ -338,5 +368,15 @@ const Dashboard = (function () {
 })();
 
 export default Dashboard;
+
+const userApi = MockUserAPI.getInstance();
+const user = userApi.getCurrentUser();
+if (user === null) {
+	window.location.href = "login.html";
+}
+
+if (user.firstTimeLogin) {
+	window.location.href = "genresChoice.html";
+}
 
 Dashboard.init();

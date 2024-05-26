@@ -9,27 +9,25 @@
   <link rel="stylesheet" href="/common/css/genresChoice.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
   <script src="/node_modules/bootstrap/dist/js/bootstrap.min.js" defer></script>
-  <script src="/common/js/script.js" defer></script>
   <script src="/common/js/genresChoice.js" type="module" defer></script>
 </head>
 
-<body class="bg-dark text-white d-flex flex-column justify-content-center">
-  <div class="genres-container">
+<body class="bg-dark text-white d-sm-flex flex-column justify-content-center w-100">
+  <div class="genres-container p-2">
     <div class="genres-block">
-      <div class="genres-header">
+      <div class="genres-header d-flex justify-content-around">
         <h1 class="text-center">Select your choice of genres</h1>
+        <h1><span id="genre-counter">0</span>/3</h1>
       </div>
       <div class="rows">
         <div id="genre-list" class="row"></div>
       </div>
       <div class="text-center">
-        <a href="/dashboard.html" class="btn btn-primary btn-save">Save</a>
+        <button id="save-btn" type="button" class="btn btn-primary btn-save">Save</button>
       </div>
     </div>
   </div>
-  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <div class="toast-container position-fixed top-0 end-0 p-3"></div>
 </body>
 
 </html>

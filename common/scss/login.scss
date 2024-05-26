@@ -50,6 +50,21 @@ body {
       margin-bottom: 15px;
     }
 
+    .input-group {
+			color: white;
+			&::placeholder {
+				color: rgb(214, 214, 214);
+			}
+
+			&::-ms-input-placeholder {
+				color: rgb(214, 214, 214);
+			}
+
+			&:-ms-input-placeholder {
+				color: rgb(214, 214, 214);
+			}
+		}
+
     .login-password,
     .login-email {
       padding: 1rem;
