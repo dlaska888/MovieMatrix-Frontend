@@ -1,6 +1,6 @@
 class UserLocationResolver {
 	async getUserRegion() {
-		return await fetch("https://ipapi.co/json/")
+		return fetch("https://ipapi.co/json/")
 			.then((response) => {
 				if (!response.ok) {
 					throw new Error(`HTTP error! status: ${response.status}`);

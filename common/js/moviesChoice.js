@@ -10,11 +10,19 @@ const MoviesChoice = (function () {
 	let searchTimer = null;
 
 	function init() {
+		const user = userApi.getCurrentUser();
+		if (!user) {
+			window.location.href = "login.html";
+			return;
+		}
+		
 		client
-			.getTrendingMovies()
+			.getMoviesByGenres(user.genres)
 			.then(async (res) => {
 				const user = userApi.getCurrentUser();
-				const userMovies = user.movies ? await client.getMoviesByIds(user.movies) : [];
+				const userMovies = user.movies
+					? await client.getMoviesByIds(user.movies)
+					: [];
 				renderMovies(userMovies.concat(res.results));
 				userMovies.forEach((movie) => {
 					selectMovie(movie.id);
@@ -64,9 +72,12 @@ const MoviesChoice = (function () {
 		}
 
 		loading = true; // Disable the button to prevent spamming
+		query = query.trim();
 		try {
+
 			if (!query) {
-				const movies = await client.getTrendingMovies();
+				const user = userApi.getCurrentUser();
+				const movies = await client.getMoviesByGenres(user.genres);
 				renderMovies(movies.results);
 			} else {
 				const res = await client.getMoviesBySearch(query);
@@ -89,13 +100,13 @@ const MoviesChoice = (function () {
 		movies.forEach((movie) => {
 			let movieCard = document.createElement("div");
 			movieCard.innerHTML = `
-        <div class="col-xxl-3 col-xl-4 col-md-6 mb-4">
-            <div id="card-${movie.id}" class="card">
-                <div class="card-body">
-                    <p>${movie.title}</p>
-                </div>
-            </div>
-        </div>`;
+			<div class="col-xxl-3 col-xl-4 col-md-6 mb-4">
+				<div id="card-${movie.id}" class="card">
+					<div class="card-body">
+						<p>${movie.title}</p>
+					</div>
+				</div>
+			</div>`;
 			movieCard = movieCard.firstElementChild;
 
 			const card = movieCard.querySelector(".card");

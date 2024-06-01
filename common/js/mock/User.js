@@ -3,9 +3,9 @@ class User {
     email;
     password;
     username;
-    seenMovies;
-    movies;
-    genres;
+    seenMovies = [];
+    movies = [];
+    genres = [];
     photoUrl;
     firstTimeLogin = true;
 }

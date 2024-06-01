@@ -1,69 +1,81 @@
+import MockUserAPI from "../mock/MockUserApi.js";
+
 class ApiClient {
 	constructor() {
 		this.apiKey = "416e798ec964e2b8b76a4e719640abbb";
 		this.baseUrl = "https://api.themoviedb.org/3";
+		this.userApi = new MockUserAPI();
 	}
 
-	async getPopularMovies() {
-		const url = `${this.baseUrl}/movie/popular?api_key=${this.apiKey}`;
-		return await this.#getResponse(url);
+	async getPopularMovies(page = 1) {
+		const url = `${this.baseUrl}/movie/popular?`;
+		return await this.#getResponse(url, page);
 	}
 
-	async getTrendingMovies() {
-		const url = `${this.baseUrl}/trending/movie/week?api_key=${this.apiKey}`;
-		return await this.#getResponse(url);
+	async getTrendingMovies(page = 1) {
+		const url = `${this.baseUrl}/trending/movie/week?`;
+		return await this.#getResponse(url, page);
 	}
 
-	async getTopRatedMovies() {
-		const url = `${this.baseUrl}/movie/top_rated?api_key=${this.apiKey}`;
-		return await this.#getResponse(url);
+	async getTopRatedMovies(page = 1) {
+		const url = `${this.baseUrl}/movie/top_rated?`;
+		return await this.#getResponse(url, page);
 	}
 
-	async getMoviesByGenres(genreId) {
-		const url = `${this.baseUrl}/discover/movie?api_key=${this.apiKey}&with_genres=${genreId.join(",")}`;
-		return await this.#getResponse(url);
+	async getNowPlayingMovies(page = 1) {
+		const url = `${this.baseUrl}/movie/now_playing?`;
+		return await this.#getResponse(url, page);
 	}
 
-	async getMovieDetails(movieId) {
-		const url = `${this.baseUrl}/movie/${movieId}?api_key=${this.apiKey}`;
-		return await this.#getResponse(url);
+	async getUpcomingMovies(page = 1) {
+		const url = `${this.baseUrl}/movie/upcoming?`;
+		return await this.#getResponse(url, page);
 	}
 
-	async getMovieDirector(movieId) {
-		const url = `${this.baseUrl}/movie/${movieId}/credits?api_key=${this.apiKey}`;
-		const data = await this.#getResponse(url);
+	async getMoviesByGenres(genreIds, page = 1) {
+		const url = `${this.baseUrl}/discover/movie?&with_genres=${genreIds.join("|")}&`;
+		return await this.#getResponseWithSeenFilter(url, page);
+	}
+
+	async getMovieDetails(movieId, page = 1) {
+		const url = `${this.baseUrl}/movie/${movieId}?`;
+		return await this.#getResponse(url, page);
+	}
+
+	async getMovieDirector(movieId, page = 1) {
+		const url = `${this.baseUrl}/movie/${movieId}/credits?`;
+		const data = await this.#getResponse(url, page);
 		const director = data.crew.find((member) => member.job === "Director");
 		return director;
 	}
 
-	async getGenreList() {
-		const url = `${this.baseUrl}/genre/movie/list?api_key=${this.apiKey}`;
-		return await this.#getResponse(url);
+	async getGenreList(page = 1) {
+		const url = `${this.baseUrl}/genre/movie/list?`;
+		return await this.#getResponse(url, page);
 	}
 
-	async getMoviesBySearch(query) {
-		const url = `${this.baseUrl}/search/movie?api_key=${this.apiKey}&query=${query}`;
-		return await this.#getResponse(url);
+	async getMoviesBySearch(query, page = 1) {
+		const url = `${this.baseUrl}/search/movie?&query=${query}&`;
+		return await this.#getResponse(url, page);
 	}
 
-	async getWatchProviders(movieId) {
-		const url = `${this.baseUrl}/movie/${movieId}/watch/providers?api_key=${this.apiKey}`;
-		return await this.#getResponse(url);
+	async getWatchProviders(movieId, page = 1) {
+		const url = `${this.baseUrl}/movie/${movieId}/watch/providers?`;
+		return await this.#getResponse(url, page);
 	}
 
-	async getMoviesWithPreferences(movieIds, genreIds) {
-		if (movieIds.length === 0) {
-			return (await this.getMoviesByGenres(genreIds)).results;
-		}
+	async getMoviesWithPreferences(movieIds, genreIds, page = 1) {
+		const genreMovies = (await this.getMoviesByGenres(genreIds, page)).results;
 
 		const similarMovies = [];
 		for (const id of movieIds) {
-			const url = `https://api.themoviedb.org/3/movie/${id}/similar?api_key=${this.apiKey}`;
-			const data = await this.#getResponse(url);
+			const url = `https://api.themoviedb.org/3/movie/${id}/similar?`;
+			const data = await this.#getResponseWithSeenFilter(url, page);
 			similarMovies.push(...data.results);
 		}
 
-		const uniqueMovies = similarMovies.filter((movie, index, self) => {
+		const allMovies = genreMovies.concat(similarMovies);
+		const uniqueMovies = allMovies.filter((movie, index, self) => {
 			return index === self.findIndex((m) => (
 				movie.id === m.id
 			));
@@ -74,23 +86,44 @@ class ApiClient {
 		return uniqueMovies;
 	}
 
-	async getMoviesByIds(ids) {
+	#shuffle(a) {
+		for (let i = a.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[a[i], a[j]] = [a[j], a[i]];
+		}
+		return a;
+	}
+
+	async getMoviesByIds(ids, page = 1) {
 		const movies = [];
 		for (const id of ids) {
-			const url = `${this.baseUrl}/movie/${id}?api_key=${this.apiKey}`;
-			const data = await this.#getResponse(url);
+			const url = `${this.baseUrl}/movie/${id}?`;
+			const data = await this.#getResponse(url, page);
 			movies.push(data);
 		}
 		return movies;
 	}
 
-	async #getResponse(url) {
-		const response = await fetch(url);
+	async #getResponse(url, page = 1) {
+		const response = await fetch(url + `api_key=${this.apiKey}&page=${page}`);
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
 		}
 		const data = await response.json();
 		return data;
+	}
+
+	async #getResponseWithSeenFilter(url, page = 1) {
+		const response = await fetch(url + `api_key=${this.apiKey}&page=${page}`);
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		const data = await response.json();
+		const user = this.userApi.getCurrentUser();
+		const filteredData = data.results.filter(movie => !user.seenMovies.includes(movie.id));
+
+		return {results: filteredData};
 	}
 }
 

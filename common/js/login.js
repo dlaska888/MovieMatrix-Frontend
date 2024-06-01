@@ -17,6 +17,6 @@ form.addEventListener("submit", (e) => {
 		}, 1000);
 	} catch (error) {
 		NotificationService.notify(error.message, "red");
-		console.log(error.message);
+		console.error(error.message);
 	}
 });

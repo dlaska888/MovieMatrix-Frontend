@@ -1,21 +1,25 @@
 import ApiClient from "../helpers/ApiClient.js";
+import MockUserAPI from "../mock/MockUserApi.js";
 import Dashboard from "./dashboard.js";
 
 const Watched = (function () {
 	const client = new ApiClient();
+	const userApi = new MockUserAPI();
 
 	function init() {
 		Dashboard.clearPageContent();
+		const user = userApi.getCurrentUser();
 
 		client
-			.getTrendingMovies()
+			.getMoviesByIds(user.seenMovies)
 			.then((res) => {
-				Dashboard.renderMovies(res.results);
+				Dashboard.renderWatchedMovies(res);
+				Dashboard.removeLoader();
 			})
 			.catch((error) => {
 				console.error("Error:", error);
+				Dashboard.renderHomeMovies([]);
 			});
-
 	}
 
 	return {

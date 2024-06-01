@@ -131,8 +131,12 @@ body {
 	}
 
 	#movies-container {
-		overflow-y: scroll;
+		overflow-y: auto;
 		height: calc(100vh - 175px);
+
+		&.fullscreen {
+			height: calc(100vh - 35px);
+		}
 	}
 
 	.movie-card {
@@ -146,6 +150,14 @@ body {
 		border-style: solid;
 		display: flex;
 		flex-direction: row;
+		position: relative;
+		transition: all 200ms ease-in-out;
+		opacity: 0; /* Add opacity property */
+		animation: fade-in 1s forwards; /* Add fade-in animation */
+
+		&:hover {
+			box-shadow: 0 4px 10px #00c2ff;
+		}
 
 		.movie-image {
 			width: 33%;
@@ -169,6 +181,13 @@ body {
 			.movie-title {
 				padding: 1% 5% 0 5%;
 				color: white;
+				h4 {
+					display: -webkit-box;
+					-webkit-box-orient: vertical;
+					-webkit-line-clamp: 2;
+					overflow: hidden;
+					text-overflow: ellipsis;
+				}
 			}
 
 			hr {
@@ -181,7 +200,29 @@ body {
 				font-size: 12px;
 				text-align: center;
 				padding: 2%;
+				overflow: auto;
 			}
+		}
+
+		.close-btn {
+			position: absolute;
+			top: 0;
+			right: 0;
+			color: #00c2ff;
+			background-color: #000000;
+			border: none;
+			border-radius: 0 10px 0 0;
+			padding: 0.5em;
+			font-size: 1.5em;
+		}
+	}
+
+	@keyframes fade-in {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
 		}
 	}
 }
@@ -215,10 +256,11 @@ body {
 	transform: translateY(-50%);
 }
 
-.dropup{
+.dropup {
 	background-color: #1a1616;
 	border: 2px solid #00c2ff;
 	border-radius: 1rem;
+	z-index: 100;
 }
 
 .dropup .hide-toggle.dropdown-toggle::after {
@@ -227,4 +269,52 @@ body {
 
 .dropup * {
 	border: none;
+}
+
+.loader {
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	position: relative;
+	animation: rotate 1s linear infinite;
+}
+.loader::before {
+	content: "";
+	box-sizing: border-box;
+	position: absolute;
+	inset: 0px;
+	border-radius: 50%;
+	border: 5px solid #00c2ff;
+	animation: prixClipFix 2s linear infinite;
+}
+
+@keyframes rotate {
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes prixClipFix {
+	0% {
+		clip-path: polygon(50% 50%, 0 0, 0 0, 0 0, 0 0, 0 0);
+	}
+	25% {
+		clip-path: polygon(50% 50%, 0 0, 100% 0, 100% 0, 100% 0, 100% 0);
+	}
+	50% {
+		clip-path: polygon(
+			50% 50%,
+			0 0,
+			100% 0,
+			100% 100%,
+			100% 100%,
+			100% 100%
+		);
+	}
+	75% {
+		clip-path: polygon(50% 50%, 0 0, 100% 0, 100% 100%, 0 100%, 0 100%);
+	}
+	100% {
+		clip-path: polygon(50% 50%, 0 0, 100% 0, 100% 100%, 0 100%, 0 0);
+	}
 }
