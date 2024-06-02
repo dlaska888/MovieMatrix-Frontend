@@ -364,7 +364,7 @@ const Dashboard = (function () {
 			<div class="movie-card col col-12 col-md-2 col-lg-4">
 				<div class="movie-image">
 					<img src="https://image.tmdb.org/t/p/w500${
-						movie.poster_path
+						movieDetails.poster_path
 					}" class="movie-image" alt="Movie Poster">
 				</div>
 				<div class="info-section d-flex flex-column justify-content-evenly w-100 h-100">
@@ -374,7 +374,7 @@ const Dashboard = (function () {
 					<hr>
 					<div class="card-info">
 						<span class="fs-5">${StringHelper.formatShortDate(
-							movie.release_date
+							movieDetails.release_date
 						)} ‧ ${movieDetails.genres
 			.slice(0, 2)
 			.map((m) => m.name)
