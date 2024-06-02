@@ -1,8 +1,8 @@
 body {
-	overflow-y: auto;
+	min-height: 100vh;
 	min-height: 100vh;
 	background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.7)),
-		url("../assets/test-bg2.jpg");
+		url("../assets/img/test-bg2.jpg");
 }
 
 .movies-container {
@@ -75,7 +75,7 @@ body {
 
 .rows {
 	overflow-y: auto;
-	max-height: 65vh;
+	height: 60vh;
 	overflow-x: hidden;
 }
 .card {
@@ -83,6 +83,7 @@ body {
 	background-size: cover;
 	background-repeat: no-repeat;
 	border: 2px solid #00c2ff;
+	animation: fade-in 1s forwards;
 }
 
 .card.selected {
@@ -97,11 +98,16 @@ p {
 	color: white;
 	font-weight: bold;
 	font-size: 24px;
-	font-family: "Cursive", cursive;
 	position: absolute;
 	bottom: 0;
-	right: 5px;
+	// right: 5px;
 	z-index: 1;
+
+	text-shadow:
+	1.5px 1.5px 0 #000,
+	-1.5px 1.5px 0 #000,
+	-1.5px -1.5px 0 #000,
+	1.5px -1.5px 0 #000;
 }
 
 .card::before {
@@ -109,7 +115,7 @@ p {
 	display: block;
 	padding-top: 60%;
 	width: 300px;
-	height: 500px;
+	height: 400px;
 }
 
 .card::after {

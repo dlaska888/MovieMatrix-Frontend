@@ -1,11 +1,12 @@
 import ApiClient from "./helpers/ApiClient.js";
 import MockUserAPI from "./mock/MockUserApi.js";
 import NotificationService from "./helpers/NotificationService.js";
+import MovieListBuilder from "./helpers/MovieListBuilder.js";
 
 const MoviesChoice = (function () {
 	const client = new ApiClient();
 	const userApi = MockUserAPI.getInstance();
-	const selectedMovies = [];
+	let selectedMoviesIds = [];
 	let loading = false;
 	let searchTimer = null;
 
@@ -15,18 +16,25 @@ const MoviesChoice = (function () {
 			window.location.href = "login.html";
 			return;
 		}
-		
+
+		this.selectedMoviesIds = user.movies;
+
 		client
 			.getMoviesByGenres(user.genres)
 			.then(async (res) => {
-				const user = userApi.getCurrentUser();
-				const userMovies = user.movies
-					? await client.getMoviesByIds(user.movies)
-					: [];
-				renderMovies(userMovies.concat(res.results));
-				userMovies.forEach((movie) => {
+				const selectedMovies = await client.getMoviesByIds(user.movies);
+				renderMovies(selectedMovies.concat(res.results));
+				selectedMovies.forEach((movie) => {
 					selectMovie(movie.id);
 				});
+				const movieListBuilder = new MovieListBuilder((page) => {
+					fetchAndAddMovies(client.getMoviesByGenres(user.genres, page));
+				}, 2);
+				document
+					.querySelector("#movies-container")
+					.addEventListener("scroll", () => {
+						movieListBuilder.handleScroll();
+					});
 			})
 			.catch((error) => {
 				console.error("Error:", error);
@@ -40,10 +48,10 @@ const MoviesChoice = (function () {
 		const saveButton = document.getElementById("save-btn");
 		saveButton.addEventListener("click", () => {
 			const user = userApi.getCurrentUser();
-			user.movies = selectedMovies;
+			user.movies = selectedMoviesIds;
 			userApi.updateUser(user.id, user);
 
-			NotificationService.notify("Genres saved successfully!", "green");
+			NotificationService.notify("Movies saved successfully!", "green");
 			setTimeout(() => {
 				window.location.href = "dashboard.html";
 			}, 1000);
@@ -55,12 +63,12 @@ const MoviesChoice = (function () {
 
 		searchBar.addEventListener("input", (event) => {
 			event.preventDefault();
-			clearTimeout(searchTimer); // Clear the previous timer
-
+			clearTimeout(searchTimer);
 			searchTimer = setTimeout(() => {
 				search(event.target.value);
-			}, 500); // Adjust the delay as needed
+			}, 500);
 		});
+
 		searchBar.addEventListener("submit", (e) => {
 			e.preventDefault();
 		});
@@ -68,29 +76,64 @@ const MoviesChoice = (function () {
 
 	async function search(query) {
 		if (loading) {
-			return; // Do nothing if the button is disabled
+			return;
 		}
 
-		loading = true; // Disable the button to prevent spamming
+		loading = true;
 		query = query.trim();
+		clearMovies();
 		try {
+			const user = userApi.getCurrentUser();
+			const selectedMovies = await client.getMoviesByIds(
+				selectedMoviesIds
+			);
 
 			if (!query) {
-				const user = userApi.getCurrentUser();
-				const movies = await client.getMoviesByGenres(user.genres);
-				renderMovies(movies.results);
+				const res = await client.getMoviesByGenres(user.genres);
+				renderMovies(selectedMovies.concat(res.results));
+				selectedMovies.forEach((movie) => {
+					selectMovie(movie.id);
+				});
+				const movieListBuilder = new MovieListBuilder((page) => {
+					fetchAndAddMovies(client.getPopularMovies(page));
+				}, 2);
+				document
+					.querySelector("#movie-list")
+					.addEventListener("scroll", () => {
+						movieListBuilder.handleScroll();
+					});
 			} else {
 				const res = await client.getMoviesBySearch(query);
 				renderMovies(res.results);
+				res.results.forEach((movie) => {
+					if (selectedMoviesIds.includes(movie.id)) {
+						selectMovie(movie.id);
+					}
+				});
 			}
 		} finally {
-			loading = false; // Re-enable the button after fetch completes
+			loading = false;
 		}
+	}
+
+	function fetchAndAddMovies(apiCall) {
+		apiCall
+			.then((res) => {
+				renderMovies(res.results);
+			})
+			.catch((error) => {
+				console.error("Error:", error);
+				renderMovies([]);
+			});
+	}
+
+	function clearMovies() {
+		const movieList = document.getElementById("movie-list");
+		movieList.innerHTML = "";
 	}
 
 	function renderMovies(movies) {
 		const movieList = document.getElementById("movie-list");
-		movieList.innerHTML = ""; // Clear the previous results
 
 		if (!movies || movies.length === 0) {
 			movieList.innerHTML = `<div class="col-12 text-center m-2"><h2>No movies found</h2></div>`;
@@ -100,7 +143,7 @@ const MoviesChoice = (function () {
 		movies.forEach((movie) => {
 			let movieCard = document.createElement("div");
 			movieCard.innerHTML = `
-			<div class="col-xxl-3 col-xl-4 col-md-6 mb-4">
+			<div class="col col-xxl-3 col-xl-4 col-md-6 mb-4">
 				<div id="card-${movie.id}" class="card">
 					<div class="card-body">
 						<p>${movie.title}</p>
@@ -112,14 +155,14 @@ const MoviesChoice = (function () {
 			const card = movieCard.querySelector(".card");
 			card.style.backgroundImage = `url(https://image.tmdb.org/t/p/w300${movie.poster_path})`;
 			card.addEventListener("click", () => {
-				if (selectedMovies.includes(movie.id)) {
+				if (selectedMoviesIds.includes(movie.id)) {
 					unselectMovie(movie.id);
 					return;
 				}
 
-				if (selectedMovies.length >= 3) {
+				if (selectedMoviesIds.length >= 5) {
 					NotificationService.notify(
-						"Please select at most 3 movies",
+						"Please select at most 5 movies",
 						"red"
 					);
 					return;
@@ -133,17 +176,19 @@ const MoviesChoice = (function () {
 	}
 
 	function selectMovie(movieId) {
-		selectedMovies.push(movieId);
+		if (!selectedMoviesIds.includes(movieId)) {
+			selectedMoviesIds.push(movieId);
+		}
 		document.getElementById(`card-${movieId}`).classList.add("selected");
 		document.getElementById("movie-counter").innerHTML =
-			selectedMovies.length;
+			selectedMoviesIds.length;
 	}
 
 	function unselectMovie(movieId) {
-		selectedMovies.splice(selectedMovies.indexOf(movieId), 1);
+		selectedMoviesIds.splice(selectedMoviesIds.indexOf(movieId), 1);
 		document.getElementById(`card-${movieId}`).classList.remove("selected");
 		document.getElementById("movie-counter").innerHTML =
-			selectedMovies.length;
+			selectedMoviesIds.length;
 	}
 
 	return {

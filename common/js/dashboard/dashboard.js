@@ -6,6 +6,8 @@ import StringHelper from "../helpers/StringHelper.js";
 import UserLocationResolver from "../helpers/UserLocationResolver.js";
 import MockUserAPI from "../mock/MockUserApi.js";
 import MovieListBuilder from "../helpers/MovieListBuilder.js";
+import Favourites from "./favourites.js";
+import NotificationService from "../helpers/NotificationService.js";
 
 const Dashboard = (function () {
 	const client = new ApiClient();
@@ -37,6 +39,11 @@ const Dashboard = (function () {
 		const discoverButton = document.querySelector("#nav-discover-btn");
 		discoverButton.addEventListener("click", () => {
 			Discover.init();
+		});
+
+		const favouritesButton = document.querySelector("#nav-favourites-btn");
+		favouritesButton.addEventListener("click", () => {
+			Favourites.init();
 		});
 
 		const watchedButton = document.querySelector("#nav-watched-btn");
@@ -242,34 +249,36 @@ const Dashboard = (function () {
 	}
 
 	function renderHomeMovies(movies) {
-		renderMovies(movies, true, false, true);
-	}
-
-	function renderDiscoverMovies(movies) {
-		renderMovies(movies, false, false, false);
-	}
-
-	function renderWatchedMovies(movies) {
 		renderMovies(movies, true, true, false);
 	}
 
+	function renderDiscoverMovies(movies) {
+		renderMovies(movies, false, false, true);
+	}
+
+	function renderWatchedMovies(movies) {
+		renderMovies(movies, true, false, false, true);
+	}
+
+	function renderFavouriteMovies(movies) {
+		renderMovies(movies, true, false, false, false, true);
+	}
+
 	function addHomeMovies(movies) {
-		addMoviesToContainer(movies, false, true);
+		addMoviesToContainer(movies, true);
 	}
 
 	function addDiscoverMovies(movies) {
-		addMoviesToContainer(movies, false, false);
-	}
-
-	function addWatchedMovies(movies) {
-		addMoviesToContainer(movies, true, false);
+		addMoviesToContainer(movies, false, true);
 	}
 
 	function renderMovies(
 		movies,
 		fullscreen = false,
+		suggestions = false,
+		discover = false,
 		watched = false,
-		suggestions = false
+		favourites = false
 	) {
 		document.querySelector("#movies-container")?.parentElement.remove();
 
@@ -277,9 +286,9 @@ const Dashboard = (function () {
 		moviesContainerWrapper.innerHTML = `
 		<div class="container-fluid d-flex flex-column align-items-center">
 			<div id="movies-container" class="row d-flex justify-content-center gap-4 gap-md-5 w-100 overflow-x-hidden">
-			<div class="flex flex-center p-2">
-			<span id="loader" class="fs-2 loader"></span>
-		</div>
+				<div class="flex flex-center p-2">
+					<span id="loader" class="fs-2 loader"></span>
+				</div>
 			</div>
 	  	</div>`;
 		moviesContainerWrapper = moviesContainerWrapper.firstElementChild;
@@ -292,7 +301,13 @@ const Dashboard = (function () {
 		}
 
 		movies.forEach(async (movie) => {
-			const movieElement = await renderMovie(movie, suggestions, watched);
+			const movieElement = await renderMovie(
+				movie,
+				suggestions,
+				discover,
+				watched,
+				favourites
+			);
 			moviesContainer.insertBefore(
 				movieElement,
 				moviesContainer.lastElementChild
@@ -308,12 +323,20 @@ const Dashboard = (function () {
 
 	function addMoviesToContainer(
 		movies,
+		suggestions = false,
+		discover = false,
 		watched = false,
-		suggestions = false
+		favourites = false
 	) {
 		const moviesContainer = document.querySelector("#movies-container");
 		movies.forEach(async (movie) => {
-			const movieEl = await renderMovie(movie, watched, suggestions);
+			const movieEl = await renderMovie(
+				movie,
+				watched,
+				discover,
+				suggestions,
+				favourites
+			);
 			moviesContainer.insertBefore(
 				movieEl,
 				moviesContainer.lastElementChild
@@ -325,7 +348,13 @@ const Dashboard = (function () {
 		document.querySelector("#loader")?.remove();
 	}
 
-	async function renderMovie(movie, suggestions = false, watched = false) {
+	async function renderMovie(
+		movie,
+		suggestions = false,
+		discover = false,
+		watched = false,
+		favourites = false
+	) {
 		const movieDetails = await client.getMovieDetails(movie.id);
 		movieDetails.watchProviders = await client.getWatchProviders(movie.id);
 		movieDetails.director = await client.getMovieDirector(movie.id);
@@ -365,34 +394,96 @@ const Dashboard = (function () {
 			renderMovieDetails(movieDetails);
 		});
 
+		const user = userApi.getCurrentUser();
+		let isFavMovie = user.favouriteMovies.includes(movie.id);
+
+		let favButton = document.createElement("button");
+		favButton.innerHTML = `<button class="fav-btn p-0 mx-3 mt-1"><i class="bi bi-star${
+			isFavMovie ? "-fill" : ""
+		}"></i></button>`;
+		favButton = favButton.firstElementChild;
+
+		let watchedButton = document.createElement("button");
+		watchedButton.innerHTML = `<button class="close-btn p-0 mx-3 mt-1"><i class="bi bi-x-lg"></i></button>`;
+		watchedButton = watchedButton.firstElementChild;
+
 		if (suggestions) {
-			var watchedButton = document.createElement("button");
-			watchedButton.innerHTML = `<button class="close-btn p-0 mx-3 mt-1"><i class="bi bi-check-lg"></i></button>`;
-			watchedButton = watchedButton.firstElementChild;
+			favButton.addEventListener("click", (event) => {
+				event.stopPropagation();
+				user.favouriteMovies.push(movie.id);
+				userApi.updateUser(user.id, user);
+				movieElement.remove();
+				NotificationService.notify("Movie added to favourites");
+			});
+			movieElement.appendChild(favButton);
+
 			watchedButton.addEventListener("click", (event) => {
 				event.stopPropagation();
-				const user = userApi.getCurrentUser();
 				user.seenMovies.push(movie.id);
 				userApi.updateUser(user.id, user);
 				movieElement.remove();
+				NotificationService.notify("Movie added to watched list");
 			});
 			movieElement.appendChild(watchedButton);
 		}
 
+		if (discover) {
+			favButton.addEventListener("click", (event) => {
+				event.stopPropagation();
+				if (isFavMovie) {
+					user.favouriteMovies = user.favouriteMovies.filter(
+						(m) => m !== movie.id
+					);
+					userApi.updateUser(user.id, user);
+					NotificationService.notify(
+						"Movie removed from favourites",
+						"red"
+					);
+					favButton.innerHTML = `<i class="bi bi-star
+					"></i>`;
+					isFavMovie = false;
+				} else {
+					user.favouriteMovies.push(movie.id);
+					userApi.updateUser(user.id, user);
+					NotificationService.notify("Movie added to favourites");
+					favButton.innerHTML = `<i class="bi bi-star-fill"></i>`;
+					isFavMovie = true;
+				}
+			});
+			movieElement.appendChild(favButton);
+		}
+
 		if (watched) {
-			var watchedButton = document.createElement("button");
-			watchedButton.innerHTML = `<button class="close-btn p-0 mx-3 mt-1"><i class="bi bi-x-lg"></i></button>`;
-			watchedButton = watchedButton.firstElementChild;
 			watchedButton.addEventListener("click", (event) => {
 				event.stopPropagation();
-				const user = userApi.getCurrentUser();
 				user.seenMovies = user.seenMovies.filter(
-					(id) => id !== movie.id
+					(m) => m !== movie.id
 				);
 				userApi.updateUser(user.id, user);
 				movieElement.remove();
+				NotificationService.notify(
+					"Movie removed from watched list",
+					"red"
+				);
 			});
+			watchedButton.style.top = "0";
 			movieElement.appendChild(watchedButton);
+		}
+
+		if (favourites) {
+			favButton.addEventListener("click", (event) => {
+				event.stopPropagation();
+				user.favouriteMovies = user.favouriteMovies.filter(
+					(m) => m !== movie.id
+				);
+				userApi.updateUser(user.id, user);
+				movieElement.remove();
+				NotificationService.notify(
+					"Movie removed from favourites",
+					"red"
+				);
+			});
+			movieElement.appendChild(favButton);
 		}
 
 		return movieElement;
@@ -563,10 +654,10 @@ const Dashboard = (function () {
 		renderHomeMovies,
 		renderDiscoverMovies,
 		renderWatchedMovies,
+		renderFavouriteMovies,
 		removeLoader,
 		addHomeMovies,
 		addDiscoverMovies,
-		addWatchedMovies,
 		renderMovieDetails,
 		renderMovieDetailsAbout,
 		renderMovieDetailsWatch,

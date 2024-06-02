@@ -4,8 +4,10 @@ class User {
     password;
     username;
     seenMovies = [];
+    favouriteMovies = [];
     movies = [];
     genres = [];
+    region = "US";
     photoUrl;
     firstTimeLogin = true;
 }

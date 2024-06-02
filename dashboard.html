@@ -8,6 +8,7 @@
   <link href="/common/css/dashboard.css" rel="stylesheet" />
   <script src="/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js" defer></script>
   <script type="module" src="/common/js/dashboard/dashboard.js" defer></script>
+  <script src="/common/js/script.js" type="module" defer></script>
   <link href="https://fonts.cdnfonts.com/css/amazon-ember" rel="stylesheet">
 </head>
 
@@ -20,6 +21,7 @@
       <div class="menu-upper">
         <a id="nav-home-btn" class="nav-btn active"><i class="bi bi-house"></i> Home</a>
         <a id="nav-discover-btn" class="nav-btn"><i class="bi bi-compass"></i> Discover</a>
+        <a id="nav-favourites-btn" class="nav-btn"><i class="bi bi-star"></i> Favourites</a>
         <a id="nav-watched-btn" class="nav-btn"><i class="bi bi-clock"></i> Watched</a>
       </div>
       <div class="menu-bottom">
@@ -30,6 +32,9 @@
   </div>
   <div id="page-content" class="page-content flex-column pt-4 pb-2"></div>
   <div class="toast-container position-fixed top-0 end-0 p-3"></div>
+  <div class="preloader">
+    <img src="/common/assets/svg/spinner.svg" alt="spinner">
+  </div>
 </body>
 
 </html>

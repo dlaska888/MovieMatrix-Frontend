@@ -1,43 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-      data-bs-theme="dark"
-    />
-    <title>Movie Matrix</title>
-    <link href="/common/css/styles.css" rel="stylesheet" />
-    <link rel="stylesheet" href="/common/css/welcome.css" />
-    <script
-      src="/node_modules/bootstrap/dist/js/bootstrap.min.js"
-      defer
-    ></script>
-  </head>
 
-  <body class="bg-black">
-    <div class="welcome-content">
-      <div class="left-strip">
-        <div class="strip-top">
-          <img
-            src="common/assets/svg/movie-matrix_logo.svg"
-            class="img-fluid rounded-top"
-            alt="Logo"
-          />
-          <p class="tagline">
-            Movify is the next gen movie recomendation system
-          </p>
-        </div>
-        <div class="strip-bottom">
-          <a href="/register.html" class="btn btn-primary create-account-button flex-center">
-            Create account
-          </a>
-          <p class="already-have-an-account">You have an account ?</p>
-          <a href="/login.html" class="btn btn-outline-primary login-button flex-center">Login</a>
-        </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" data-bs-theme="dark" />
+  <title>Movie Matrix</title>
+  <link href="/common/css/styles.css" rel="stylesheet" />
+  <link rel="stylesheet" href="/common/css/welcome.css" />
+  <script src="/common/js/script.js" type="module" defer></script>
+  <script src="/node_modules/bootstrap/dist/js/bootstrap.min.js" defer></script>
+</head>
+
+<body class="bg-black">
+  <div class="welcome-content">
+    <div class="left-strip">
+      <div class="strip-top">
+        <img src="common/assets/svg/movie-matrix_logo.svg" class="img-fluid rounded-top" alt="Logo" />
+        <p class="tagline">
+          Movify is the next gen movie recomendation system
+        </p>
       </div>
-      <div class="welcome-background"></div>
+      <div class="strip-bottom">
+        <a href="/register.html" class="btn btn-primary create-account-button flex-center">
+          Create account
+        </a>
+        <p class="already-have-an-account">You have an account ?</p>
+        <a href="/login.html" class="btn btn-outline-primary login-button flex-center">Login</a>
+      </div>
     </div>
-  </body>
+    <div class="welcome-background"></div>
+
+  </div>
+  <div class="preloader">
+    <img src="/common/assets/svg/spinner.svg" alt="spinner">
+  </div>
+</body>
+
 </html>

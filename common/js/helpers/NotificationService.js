@@ -1,5 +1,5 @@
 class NotificationService {
-	static notify(message, color) {
+	static notify(message, color = "green") {
 		let toast = document.createElement("div");
 		toast.innerHTML = `
         <div class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">

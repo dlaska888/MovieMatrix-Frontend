@@ -1,5 +1,5 @@
 $theme-colors: (
-  "primary": #00c2ff,
+	"primary": #00c2ff,
 );
 
 $primary: #00c2ff;
@@ -25,7 +25,7 @@ body {
 		display: none !important;
 	}
 }
- 
+
 @media (min-width: 769px) {
 	.hide-desktop {
 		display: none !important;
@@ -44,4 +44,77 @@ body {
 
 .text-justify {
 	text-align: justify;
+}
+
+.preloader {
+	align-items: center;
+	background: rgb(23, 22, 22);
+	display: flex;
+	height: 100vh;
+	justify-content: center;
+	left: 0;
+	position: fixed;
+	top: 0;
+	transition: opacity 0.3s linear;
+	width: 100%;
+	z-index: 9999;
+	pointer-events: none;
+}
+
+.loader {
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	position: relative;
+	animation: rotate 1s linear infinite;
+}
+
+.loader::before {
+	content: "";
+	box-sizing: border-box;
+	position: absolute;
+	inset: 0px;
+	border-radius: 50%;
+	border: 5px solid #00c2ff;
+	animation: prixClipFix 2s linear infinite;
+}
+
+@keyframes rotate {
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes prixClipFix {
+	0% {
+		clip-path: polygon(50% 50%, 0 0, 0 0, 0 0, 0 0, 0 0);
+	}
+	25% {
+		clip-path: polygon(50% 50%, 0 0, 100% 0, 100% 0, 100% 0, 100% 0);
+	}
+	50% {
+		clip-path: polygon(
+			50% 50%,
+			0 0,
+			100% 0,
+			100% 100%,
+			100% 100%,
+			100% 100%
+		);
+	}
+	75% {
+		clip-path: polygon(50% 50%, 0 0, 100% 0, 100% 100%, 0 100%, 0 100%);
+	}
+	100% {
+		clip-path: polygon(50% 50%, 0 0, 100% 0, 100% 100%, 0 100%, 0 0);
+	}
+}
+
+@keyframes fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }

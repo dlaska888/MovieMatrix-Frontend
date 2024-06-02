@@ -82,6 +82,11 @@ const GenresChoice = (function () {
 
 				selectGenre(genre.id);
 			});
+
+			const path = `../../common/assets/img/genres`;
+			genreCard.firstElementChild.style.backgroundImage = 
+			`url(${path}/${genre.id}.jpg), url(${path}/${genre.id}.png), url(${path}/${genre.id}.webp), url(${path}/${genre.id}.jpeg), url(${path}/default.jpg)`;
+
 			genreList.appendChild(genreCard);
 		});
 	}

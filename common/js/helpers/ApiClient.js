@@ -33,8 +33,10 @@ class ApiClient {
 	}
 
 	async getMoviesByGenres(genreIds, page = 1) {
-		const url = `${this.baseUrl}/discover/movie?&with_genres=${genreIds.join("|")}&`;
-		return await this.#getResponseWithSeenFilter(url, page);
+		const url = `${
+			this.baseUrl
+		}/discover/movie?&with_genres=${genreIds.join("|")}&`;
+		return await this.#getResponseWithFilter(url, page);
 	}
 
 	async getMovieDetails(movieId, page = 1) {
@@ -65,33 +67,24 @@ class ApiClient {
 	}
 
 	async getMoviesWithPreferences(movieIds, genreIds, page = 1) {
-		const genreMovies = (await this.getMoviesByGenres(genreIds, page)).results;
+		const genreMovies = (await this.getMoviesByGenres(genreIds, page))
+			.results;
 
 		const similarMovies = [];
 		for (const id of movieIds) {
 			const url = `https://api.themoviedb.org/3/movie/${id}/similar?`;
-			const data = await this.#getResponseWithSeenFilter(url, page);
+			const data = await this.#getResponseWithFilter(url, page);
 			similarMovies.push(...data.results);
 		}
 
 		const allMovies = genreMovies.concat(similarMovies);
 		const uniqueMovies = allMovies.filter((movie, index, self) => {
-			return index === self.findIndex((m) => (
-				movie.id === m.id
-			));
+			return index === self.findIndex((m) => movie.id === m.id);
 		});
 
 		uniqueMovies.sort((a, b) => b.popularity - a.popularity);
 
 		return uniqueMovies;
-	}
-
-	#shuffle(a) {
-		for (let i = a.length - 1; i > 0; i--) {
-			const j = Math.floor(Math.random() * (i + 1));
-			[a[i], a[j]] = [a[j], a[i]];
-		}
-		return a;
 	}
 
 	async getMoviesByIds(ids, page = 1) {
@@ -105,7 +98,10 @@ class ApiClient {
 	}
 
 	async #getResponse(url, page = 1) {
-		const response = await fetch(url + `api_key=${this.apiKey}&page=${page}`);
+		const user = this.userApi.getCurrentUser();
+		const response = await fetch(
+			url + `api_key=${this.apiKey}&page=${page}&region=${user.region}`
+		);
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
 		}
@@ -113,17 +109,17 @@ class ApiClient {
 		return data;
 	}
 
-	async #getResponseWithSeenFilter(url, page = 1) {
-		const response = await fetch(url + `api_key=${this.apiKey}&page=${page}`);
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		}
-
-		const data = await response.json();
+	async #getResponseWithFilter(url, page = 1) {
+		const data = await this.#getResponse(url, page);
 		const user = this.userApi.getCurrentUser();
-		const filteredData = data.results.filter(movie => !user.seenMovies.includes(movie.id));
+		const filteredData = data.results.filter(
+			(movie) =>
+				!user.seenMovies.includes(movie.id) &&
+				!user.movies.includes(movie.id) &&
+				!user.favouriteMovies.includes(movie.id)
+		);
 
-		return {results: filteredData};
+		return { results: filteredData };
 	}
 }
 
