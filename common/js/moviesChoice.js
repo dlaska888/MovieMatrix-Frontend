@@ -28,7 +28,9 @@ const MoviesChoice = (function () {
 					selectMovie(movie.id);
 				});
 				const movieListBuilder = new MovieListBuilder((page) => {
-					fetchAndAddMovies(client.getMoviesByGenres(user.genres, page));
+					fetchAndAddMovies(
+						client.getMoviesByGenres(user.genres, page)
+					);
 				}, 2);
 				document
 					.querySelector("#movies-container")
@@ -88,20 +90,24 @@ const MoviesChoice = (function () {
 				selectedMoviesIds
 			);
 
+			const movieList = document.querySelector("#movies-container");
+			movieList.replaceWith(movieList.cloneNode(true));
+
 			if (!query) {
 				const res = await client.getMoviesByGenres(user.genres);
 				renderMovies(selectedMovies.concat(res.results));
 				selectedMovies.forEach((movie) => {
 					selectMovie(movie.id);
 				});
+
 				const movieListBuilder = new MovieListBuilder((page) => {
+					console.log("query", query);
 					fetchAndAddMovies(client.getPopularMovies(page));
 				}, 2);
-				document
-					.querySelector("#movie-list")
-					.addEventListener("scroll", () => {
-						movieListBuilder.handleScroll();
-					});
+
+				movieList.addEventListener("scroll", () => {
+					movieListBuilder.handleScroll();
+				});
 			} else {
 				const res = await client.getMoviesBySearch(query);
 				renderMovies(res.results);
@@ -109,6 +115,14 @@ const MoviesChoice = (function () {
 					if (selectedMoviesIds.includes(movie.id)) {
 						selectMovie(movie.id);
 					}
+				});
+
+				const movieListBuilder = new MovieListBuilder((page) => {
+					fetchAndAddMovies(client.getMoviesBySearch(page).results);
+				}, 2);
+				
+				movieList.addEventListener("scroll", () => {
+					movieListBuilder.handleScroll();
 				});
 			}
 		} finally {

@@ -12,6 +12,10 @@ body {
 	height: 100vh;
 }
 
+button, a{
+	cursor: pointer;
+}
+
 // utils
 
 .flex-center {
@@ -39,6 +43,12 @@ body {
 	&::-webkit-scrollbar,
 	&::-webkit-scrollbar {
 		display: none; /* Chrome, Safari, and Opera */
+	}
+}
+
+.no-overflow-mobile{
+	@media (max-width: 768px) {
+		overflow: visible !important;
 	}
 }
 

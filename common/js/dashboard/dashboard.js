@@ -8,6 +8,7 @@ import MockUserAPI from "../mock/MockUserApi.js";
 import MovieListBuilder from "../helpers/MovieListBuilder.js";
 import Favourites from "./favourites.js";
 import NotificationService from "../helpers/NotificationService.js";
+import MyProfile from "./my-profile.js";
 
 const Dashboard = (function () {
 	const client = new ApiClient();
@@ -655,6 +656,7 @@ const Dashboard = (function () {
 		renderDiscoverMovies,
 		renderWatchedMovies,
 		renderFavouriteMovies,
+		renderMovie,
 		removeLoader,
 		addHomeMovies,
 		addDiscoverMovies,

@@ -41,9 +41,10 @@ body {
 }
 
 .card {
-	background-image: url("../assets/img/genre-photos/default.jpg");
+	background-image: url("../assets/img/genres/default.jpg");
 	background-size: cover;
 	border: 2px solid #00c2ff;
+	animation: fade-in 1s forwards;
 }
 
 .card.selected{

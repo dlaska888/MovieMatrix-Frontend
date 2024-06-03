@@ -228,7 +228,54 @@ body {
 			font-size: 1.5em;
 		}
 	}
-	
+}
+
+.my-profile {
+	#preference-genres-container {
+		.card {
+			background-image: url("../assets/img/genres/default.jpg");
+			background-size: cover;
+			border: 2px solid #00c2ff;
+			animation: fade-in 1s forwards;
+		}
+
+		.card.selected {
+			border: 2px solid green;
+		}
+
+		.card-body {
+			position: relative;
+		}
+
+		p {
+			color: white;
+			font-weight: bold;
+			font-size: 24px;
+			position: absolute;
+			bottom: 0;
+			right: 5px;
+			z-index: 1;
+
+			text-shadow: 1.5px 1.5px 0 #000, -1.5px 1.5px 0 #000,
+				-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000;
+		}
+
+		.card::before {
+			content: "";
+			display: block;
+			padding-top: 60%;
+		}
+
+		.card::after {
+			content: "";
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(0, 0, 0, 0.5);
+		}
+	}
 }
 
 .search_bar {
@@ -274,4 +321,3 @@ body {
 .dropup * {
 	border: none;
 }
-
