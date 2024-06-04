@@ -1,24 +1,28 @@
 import Home from "./home.js";
 import Discover from "./discover.js";
 import Watched from "./watched.js";
-import ApiClient from "../helpers/ApiClient.js";
 import StringHelper from "../helpers/StringHelper.js";
 import UserLocationResolver from "../helpers/UserLocationResolver.js";
-import MockUserAPI from "../mock/MockUserApi.js";
 import MovieListBuilder from "../helpers/MovieListBuilder.js";
 import Favourites from "./favourites.js";
 import NotificationService from "../helpers/NotificationService.js";
 import MyProfile from "./my-profile.js";
+import UserApiClient from "../api/UserApiClient.js";
+import TmdbApiClient from "../api/TmdbApiClient.js";
 
 const Dashboard = (function () {
-	const client = new ApiClient();
-	const userApi = MockUserAPI.getInstance();
+	const userApi = new UserApiClient();
 	const userRegionResolver = new UserLocationResolver();
+	let tmdbApi = null
+	let user = null;
+
 	const pageContent = document.querySelector("#page-content");
 	let loading = false;
 	let searchTimer = null;
 
-	function init() {
+	async function init() {
+		user = await userApi.getCurrentUser();
+		tmdbApi = new TmdbApiClient(user);
 		Home.init();
 		initNavButtons();
 	}
@@ -29,38 +33,51 @@ const Dashboard = (function () {
 			button.addEventListener("click", async (event) => {
 				buttons.forEach((b) => b.classList.remove("active"));
 				event.target.classList.add("active");
+				user = await userApi.getCurrentUser();
 			});
 		});
 
-		const homeButton = document.querySelector("#nav-home-btn");
-		homeButton.addEventListener("click", () => {
-			Home.init();
+		const homeButtons = document.querySelectorAll(".nav-home-btn");
+		homeButtons.forEach((button) => {
+			button.addEventListener("click", async () => {
+				await Home.init();
+			});
 		});
 
-		const discoverButton = document.querySelector("#nav-discover-btn");
-		discoverButton.addEventListener("click", () => {
-			Discover.init();
+		const discoverButtons = document.querySelectorAll(".nav-discover-btn");
+		discoverButtons.forEach((button) => {
+			button.addEventListener("click", async () => {
+				await Discover.init();
+			});
 		});
 
-		const favouritesButton = document.querySelector("#nav-favourites-btn");
-		favouritesButton.addEventListener("click", () => {
-			Favourites.init();
+		const favouritesButtons = document.querySelectorAll(".nav-favourites-btn");
+		favouritesButtons.forEach((button) => {
+			button.addEventListener("click", async () => {
+				await Favourites.init();
+			});
 		});
 
-		const watchedButton = document.querySelector("#nav-watched-btn");
-		watchedButton.addEventListener("click", () => {
-			Watched.init();
+		const watchedButtons = document.querySelectorAll(".nav-watched-btn");
+		watchedButtons.forEach((button) => {
+			button.addEventListener("click", async () => {
+				await Watched.init();
+			});
 		});
 
-		const profileButton = document.querySelector("#nav-my-profile-btn");
-		profileButton.addEventListener("click", () => {
-			MyProfile.init();
+		const profileButtons = document.querySelectorAll(".nav-my-profile-btn");
+		profileButtons.forEach((button) => {
+			button.addEventListener("click", async () => {
+				await MyProfile.init();
+			});
 		});
 
-		const logoutButton = document.querySelector("#nav-logout-btn");
-		logoutButton.addEventListener("click", () => {
-			userApi.logout();
-			window.location.href = "login.html";
+		const logoutButtons = document.querySelectorAll(".nav-logout-btn");
+		logoutButtons.forEach((button) => {
+			button.addEventListener("click", async () => {
+				await userApi.logout();
+				window.location.href = "login.html";
+			});
 		});
 	}
 
@@ -88,9 +105,9 @@ const Dashboard = (function () {
 
 		const nowPlayingButton = buttonsContainer.querySelector("#now-playing");
 		nowPlayingButton.addEventListener("click", async () => {
-			const res = await client.getNowPlayingMovies();
+			const res = await tmdbApi.getNowPlayingMovies();
 			const movieListBuilder = new MovieListBuilder((page) => {
-				fetchAndAddMovies(client.getNowPlayingMovies(page));
+				fetchAndAddMovies(tmdbApi.getNowPlayingMovies(page));
 			}, 2);
 			renderDiscoverMovies(res.results);
 			document
@@ -102,9 +119,9 @@ const Dashboard = (function () {
 
 		const popularButton = buttonsContainer.querySelector("#popular");
 		popularButton.addEventListener("click", async () => {
-			const res = await client.getPopularMovies();
+			const res = await tmdbApi.getPopularMovies();
 			const movieListBuilder = new MovieListBuilder((page) => {
-				fetchAndAddMovies(client.getPopularMovies(page));
+				fetchAndAddMovies(tmdbApi.getPopularMovies(page));
 			}, 2);
 			renderDiscoverMovies(res.results);
 			document
@@ -116,9 +133,9 @@ const Dashboard = (function () {
 
 		const trendingButton = buttonsContainer.querySelector("#trending");
 		trendingButton.addEventListener("click", async () => {
-			const res = await client.getTrendingMovies();
+			const res = await tmdbApi.getTrendingMovies();
 			const movieListBuilder = new MovieListBuilder((page) => {
-				fetchAndAddMovies(client.getTrendingMovies(page));
+				fetchAndAddMovies(tmdbApi.getTrendingMovies(page));
 			}, 2);
 			renderDiscoverMovies(res.results);
 			document
@@ -130,9 +147,9 @@ const Dashboard = (function () {
 
 		const topRatedButton = buttonsContainer.querySelector("#top-rated");
 		topRatedButton.addEventListener("click", async () => {
-			const res = await client.getTopRatedMovies();
+			const res = await tmdbApi.getTopRatedMovies();
 			const movieListBuilder = new MovieListBuilder((page) => {
-				fetchAndAddMovies(client.getTopRatedMovies(page));
+				fetchAndAddMovies(tmdbApi.getTopRatedMovies(page));
 			}, 2);
 			renderDiscoverMovies(res.results);
 			document
@@ -144,9 +161,9 @@ const Dashboard = (function () {
 
 		const upcomingButton = buttonsContainer.querySelector("#upcoming");
 		upcomingButton.addEventListener("click", async () => {
-			const res = await client.getUpcomingMovies();
+			const res = await tmdbApi.getUpcomingMovies();
 			const movieListBuilder = new MovieListBuilder((page) => {
-				fetchAndAddMovies(client.getUpcomingMovies(page));
+				fetchAndAddMovies(tmdbApi.getUpcomingMovies(page));
 			}, 2);
 			renderDiscoverMovies(res.results);
 			document
@@ -192,9 +209,9 @@ const Dashboard = (function () {
 		query = query.trim();
 		try {
 			if (!query) {
-				const res = await client.getPopularMovies();
+				const res = await tmdbApi.getPopularMovies();
 				const movieListBuilder = new MovieListBuilder((page) => {
-					fetchAndAddMovies(client.getPopularMovies(page));
+					fetchAndAddMovies(tmdbApi.getPopularMovies(page));
 				}, 2);
 				renderDiscoverMovies(res.results);
 				document
@@ -203,9 +220,9 @@ const Dashboard = (function () {
 						movieListBuilder.handleScroll();
 					});
 			} else {
-				const res = await client.getMoviesBySearch(query);
+				const res = await tmdbApi.getMoviesBySearch(query);
 				const movieListBuilder = new MovieListBuilder((page) => {
-					fetchAndAddMovies(client.getMoviesBySearch(query, page));
+					fetchAndAddMovies(tmdbApi.getMoviesBySearch(query, page));
 				}, 2);
 				renderDiscoverMovies(res.results);
 				document
@@ -356,9 +373,9 @@ const Dashboard = (function () {
 		watched = false,
 		favourites = false
 	) {
-		const movieDetails = await client.getMovieDetails(movie.id);
-		movieDetails.watchProviders = await client.getWatchProviders(movie.id);
-		movieDetails.director = await client.getMovieDirector(movie.id);
+		const movieDetails = await tmdbApi.getMovieDetails(movie.id);
+		movieDetails.watchProviders = await tmdbApi.getWatchProviders(movie.id);
+		movieDetails.director = await tmdbApi.getMovieDirector(movie.id);
 
 		var movieElement = document.createElement("div");
 		movieElement.innerHTML = `
@@ -395,7 +412,6 @@ const Dashboard = (function () {
 			renderMovieDetails(movieDetails);
 		});
 
-		const user = userApi.getCurrentUser();
 		let isFavMovie = user.favouriteMovies.includes(movie.id);
 
 		let favButton = document.createElement("button");
@@ -409,19 +425,17 @@ const Dashboard = (function () {
 		watchedButton = watchedButton.firstElementChild;
 
 		if (suggestions) {
-			favButton.addEventListener("click", (event) => {
+			favButton.addEventListener("click", async (event) => {
 				event.stopPropagation();
-				user.favouriteMovies.push(movie.id);
-				userApi.updateUser(user.id, user);
+				await userApi.addFavouriteMovie(movie.id);
 				movieElement.remove();
 				NotificationService.notify("Movie added to favourites");
 			});
 			movieElement.appendChild(favButton);
 
-			watchedButton.addEventListener("click", (event) => {
+			watchedButton.addEventListener("click", async (event) => {
 				event.stopPropagation();
-				user.seenMovies.push(movie.id);
-				userApi.updateUser(user.id, user);
+				await userApi.addSeenMovie(movie.id);
 				movieElement.remove();
 				NotificationService.notify("Movie added to watched list");
 			});
@@ -429,13 +443,10 @@ const Dashboard = (function () {
 		}
 
 		if (discover) {
-			favButton.addEventListener("click", (event) => {
+			favButton.addEventListener("click", async (event) => {
 				event.stopPropagation();
 				if (isFavMovie) {
-					user.favouriteMovies = user.favouriteMovies.filter(
-						(m) => m !== movie.id
-					);
-					userApi.updateUser(user.id, user);
+					await userApi.removeFavouriteMovie(movie.id);
 					NotificationService.notify(
 						"Movie removed from favourites",
 						"red"
@@ -444,8 +455,7 @@ const Dashboard = (function () {
 					"></i>`;
 					isFavMovie = false;
 				} else {
-					user.favouriteMovies.push(movie.id);
-					userApi.updateUser(user.id, user);
+					await userApi.addFavouriteMovie(movie.id);
 					NotificationService.notify("Movie added to favourites");
 					favButton.innerHTML = `<i class="bi bi-star-fill"></i>`;
 					isFavMovie = true;
@@ -455,12 +465,9 @@ const Dashboard = (function () {
 		}
 
 		if (watched) {
-			watchedButton.addEventListener("click", (event) => {
+			watchedButton.addEventListener("click", async (event) => {
 				event.stopPropagation();
-				user.seenMovies = user.seenMovies.filter(
-					(m) => m !== movie.id
-				);
-				userApi.updateUser(user.id, user);
+				await userApi.removeSeenMovie(movie.id);
 				movieElement.remove();
 				NotificationService.notify(
 					"Movie removed from watched list",
@@ -472,12 +479,9 @@ const Dashboard = (function () {
 		}
 
 		if (favourites) {
-			favButton.addEventListener("click", (event) => {
+			favButton.addEventListener("click", async (event) => {
 				event.stopPropagation();
-				user.favouriteMovies = user.favouriteMovies.filter(
-					(m) => m !== movie.id
-				);
-				userApi.updateUser(user.id, user);
+				await userApi.removeFavouriteMovie(movie.id);
 				movieElement.remove();
 				NotificationService.notify(
 					"Movie removed from favourites",
@@ -669,14 +673,9 @@ const Dashboard = (function () {
 
 export default Dashboard;
 
-const userApi = MockUserAPI.getInstance();
-const user = userApi.getCurrentUser();
-if (user === null) {
+const userApi = new UserApiClient();
+if (!(await userApi.isUserLoggedIn())) {
 	window.location.href = "login.html";
 }
 
-if (user.firstTimeLogin) {
-	window.location.href = "genresChoice.html";
-}
-
-Dashboard.init();
+await Dashboard.init();

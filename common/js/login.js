@@ -1,22 +1,23 @@
-import User from "./mock/User.js";
-import MockUserAPI from "./mock/MockUserApi.js";
 import NotificationService from "./helpers/NotificationService.js";
+import UserApiClient from "./api/UserApiClient.js";
 
-const userApi = MockUserAPI.getInstance();
+const apiClient = new UserApiClient();
 
 const form = document.querySelector("#login-form");
-form.addEventListener("submit", (e) => {
+form.addEventListener("submit", async (e) => {
 	e.preventDefault();
-	try {
-		if (!userApi.login(form.email.value, form.password.value)) {
-			throw new Error("Invalid email or password");
-		}
-		NotificationService.notify("Logged in successfully!", "green");
-		setTimeout(() => {
-			window.location.href = "dashboard.html";
-		}, 1000);
-	} catch (error) {
-		NotificationService.notify(error.message, "red");
-		console.error(error.message);
-	}
+	const email = form.email.value;
+	const password = form.password.value;
+	await apiClient
+		.login(email, password)
+		.then(() => {
+			NotificationService.notify("Logged in successfully!", "green");
+			setTimeout(() => {
+				window.location.href = "dashboard.html";
+			}, 1000);
+		})
+		.catch((error) => {
+			NotificationService.notify(error.message, "red");
+			console.error(error.message);
+		});
 });

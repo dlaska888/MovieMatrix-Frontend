@@ -1,12 +1,16 @@
+import TmdbApiClient from "../api/TmdbApiClient.js";
+import UserApiClient from "../api/UserApiClient.js";
+import NotificationService from "../helpers/NotificationService.js";
 import Dashboard from "./dashboard.js";
-import MockUserAPI from "../mock/MockUserApi.js";
-import ApiClient from "../helpers/ApiClient.js";
 
 const MyProfile = (function () {
-	const userApi = new MockUserAPI();
-	const client = new ApiClient();
+	const userApi = new UserApiClient();
+	let tmdbApi = null;
 
-	function init() {
+	async function init() {
+		const user = await userApi.getCurrentUser();
+		tmdbApi = new TmdbApiClient(user);
+
 		Dashboard.clearPageContent();
 		const pageContent = document.querySelector("#page-content");
 		let container = document.createElement("div");
@@ -16,10 +20,11 @@ const MyProfile = (function () {
             </div>`;
 		container = container.firstElementChild;
 
-		const user = userApi.getCurrentUser();
-		container.firstElementChild.appendChild(renderForm(user));
-		container.firstElementChild.appendChild(renderPreferences(user));
-		pageContent.appendChild(container);
+		userApi.getCurrentUser().then((user) => {
+			container.firstElementChild.appendChild(renderForm(user));
+			container.firstElementChild.appendChild(renderPreferences(user));
+			pageContent.appendChild(container);
+		});
 	}
 
 	function renderForm(user) {
@@ -27,29 +32,24 @@ const MyProfile = (function () {
 		form.innerHTML = `
             <div class="col col-12 col-xl-4 d-flex flex-column">
             <h2 class="mb-4">My Profile</h2>
+			<h4 class="mb-4">${user.username}</h4>
             <form style="max-width: 500px; animation: fade-in 1s linear">
-                <div class="mb-3">
-                    <label for="username" class="form-label">Username</label>
+				<div class="mb-3">
+                    <label for="newPassword" class="form-label">New Password</label>
                     <div class="input-group">
-                    <input type="text" class="form-control" id="username" value="${user.username}">
+                    <input type="password" class="form-control" id="newPassword" required>
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
+                    <label for="confirmPassword" class="form-label">Confirm Password</label>
                     <div class="input-group">
-                    <input type="text" class="form-control" id="email" value="${user.email}">
+                    <input type="password" class="form-control" id="confirmPassword" required>
                     </div>
                 </div>
-                <div class="mb-3">
-                    <label for="new-password" class="form-label">New Password</label>
+				<div class="mb-3">
+                    <label for="oldPassword" class="form-label">Old Password</label>
                     <div class="input-group">
-                    <input type="password" class="form-control" id="new-password">
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label for="confirm-password" class="form-label">Confirm Password</label>
-                    <div class="input-group">
-                    <input type="password" class="form-control" id="confirm-password">
+                    <input type="password" class="form-control" id="oldPassword" required>
                     </div>
                 </div>
                 <button type="submit" class="btn btn-primary text-white">Save</button>
@@ -57,19 +57,44 @@ const MyProfile = (function () {
             </div>
             `;
 
-		const newPasswordInput = form.querySelector("#new-password");
-		const confirmPasswordInput = form.querySelector("#confirm-password");
+		// const confirmPasswordInput = form.querySelector("#confirm-password");
 
-		confirmPasswordInput.addEventListener("input", (event) => {
-			if (newPasswordInput.value !== confirmPasswordInput.value) {
-				confirmPasswordInput.setCustomValidity(
-					"Passwords do not match"
-				);
-			} else {
-				confirmPasswordInput.setCustomValidity("");
-			}
-		});
+		// confirmPasswordInput.addEventListener("input", (event) => {
+		// 	const newPasswordInput = form.querySelector("#newPassword");
+		// 	if (newPasswordInput.value !== event.target.value) {
+		// 		confirmPasswordInput.setCustomValidity(
+		// 			"Passwords do not match"
+		// 		);
+		// 	} else {
+		// 		confirmPasswordInput.setCustomValidity("");
+		// 	}
+		// });
+
+		form.querySelector("form").addEventListener("submit", saveForm);
+
 		return form.firstElementChild;
+	}
+
+	function saveForm(event) {
+		event.preventDefault();
+
+		if (event.target.newPassword.value !== event.target.confirmPassword.value) {
+			NotificationService.notify("Passwords do not match", "red");
+			return;
+		}
+		
+		userApi
+			.changePassword(
+				event.target.oldPassword.value,
+				event.target.newPassword.value,
+				event.target.confirmPassword.value
+			)
+			.then(() => {
+				NotificationService.notify("Password changed successfully", "green");
+			})
+			.catch((error) => {
+				NotificationService.notify("Invalid password", "red");
+			});
 	}
 
 	function renderPreferences(user) {
@@ -101,15 +126,15 @@ const MyProfile = (function () {
 			"#preference-genres-container"
 		);
 
-		client.getMoviesByIds(user.movies).then((movies) => {
+		tmdbApi.getMoviesByIds(user.moviePreferences).then((movies) => {
 			movies.forEach(async (movie) => {
 				moviesContainer.appendChild(await Dashboard.renderMovie(movie));
 			});
 		});
 
-		client.getGenreList().then((res) => {
+		tmdbApi.getGenreList().then((res) => {
 			res.genres.forEach((genre) => {
-				if (user.genres.includes(genre.id)) {
+				if (user.categories.includes(genre.id)) {
 					genresContainer.appendChild(renderGenre(genre));
 				}
 			});
@@ -128,7 +153,7 @@ const MyProfile = (function () {
 					</div>
 				</div>
 			</div>`;
-        genreCard = genreCard.firstElementChild;
+		genreCard = genreCard.firstElementChild;
 
 		const path = `/common/assets/img/genres`;
 		genreCard.firstElementChild.style.backgroundImage = `url(${path}/${genre.id}.jpg), url(${path}/${genre.id}.png), url(${path}/${genre.id}.webp), url(${path}/${genre.id}.jpeg), url(${path}/default.jpg)`;

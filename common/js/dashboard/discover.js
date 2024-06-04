@@ -1,18 +1,24 @@
-import ApiClient from "../helpers/ApiClient.js";
 import Dashboard from "./dashboard.js";
 import MovieListBuilder from "../helpers/MovieListBuilder.js";
+import TmdbApiClient from "../api/TmdbApiClient.js";
+import UserApiClient from "../api/UserApiClient.js";
 
 const Discover = (function () {
-	const client = new ApiClient();
+	const userApi = new UserApiClient();
+	let tmdbApi = null;
 
-	function init() {
+
+	async function init() {
+		const user = await userApi.getCurrentUser();
+		tmdbApi = new TmdbApiClient(user);
+
 		const movieListBuilder = new MovieListBuilder(addNowPlayingMovies, 2);
 
 		Dashboard.clearPageContent();
 		Dashboard.renderOptionButtons();
 		Dashboard.renderSearchBar();
 
-		client
+		tmdbApi
 			.getNowPlayingMovies()
 			.then((res) => {
 				Dashboard.renderDiscoverMovies(res.results);
@@ -29,7 +35,7 @@ const Discover = (function () {
 	}
 
 	function addNowPlayingMovies(page) {
-		client
+		tmdbApi
 			.getTrendingMovies(page)
 			.then((res) => {
 				Dashboard.addDiscoverMovies(res.results);

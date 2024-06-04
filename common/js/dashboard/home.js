@@ -1,21 +1,24 @@
-import ApiClient from "../helpers/ApiClient.js";
 import Dashboard from "./dashboard.js";
-import MockUserAPI from "../mock/MockUserApi.js";
 import MovieListBuilder from "../helpers/MovieListBuilder.js";
+import TmdbApiClient from "../api/TmdbApiClient.js";
+import UserApiClient from "../api/UserApiClient.js";
 
 const Home = (function () {
-	const client = new ApiClient();
-	const userApi = new MockUserAPI();
-	const user = userApi.getCurrentUser();
+	const userApi = new UserApiClient();
+	let tmdbApi = null;
+	let user = null;
 
-	function init() {
+	async function init() {
+		user = await userApi.getCurrentUser();
+		tmdbApi = new TmdbApiClient(user);
+
 		const movieListBuilder = new MovieListBuilder(addMovies, 2);
 
 		Dashboard.clearPageContent();
 		Dashboard.renderSettingsButton();
 
-		client
-			.getMoviesWithPreferences(user.movies, user.genres)
+		tmdbApi
+			.getMoviesWithPreferences(user.moviePreferences, user.categories)
 			.then((res) => {
 				Dashboard.renderHomeMovies(res);
 				document
@@ -31,8 +34,8 @@ const Home = (function () {
 	}
 
 	function addMovies(page) {
-		client
-			.getMoviesWithPreferences(user.movies, user.genres, page)
+		tmdbApi
+			.getMoviesWithPreferences(user.moviePreferences, user.categories, page)
 			.then((res) => {
 				Dashboard.addHomeMovies(res);
 			})

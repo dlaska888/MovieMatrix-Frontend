@@ -8,7 +8,6 @@ class User {
     movies = [];
     genres = [];
     region = "US";
-    photoUrl;
     firstTimeLogin = true;
 }
 

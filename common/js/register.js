@@ -1,29 +1,24 @@
-import User from "./mock/User.js";
-import MockUserAPI from "./mock/MockUserApi.js";
 import NotificationService from "./helpers/NotificationService.js";
-import UserLocationResolver from "./helpers/UserLocationResolver.js";
+import UserApiClient from "./api/UserApiClient.js";
 
-const userApi = MockUserAPI.getInstance();
-const userLocationResolver = new UserLocationResolver();
+const apiClient = new UserApiClient();
 
 const form = document.querySelector("#login-form");
 form.addEventListener("submit", async (e) => {
 	e.preventDefault();
-	const user = new User();
-	user.email = form.email.value;
-	user.password = form.password.value;
-	user.username = form.username.value;
-	user.region = await userLocationResolver.getUserRegion();
-
-	try {
-		userApi.createUser(user);
-		userApi.login(form.email.value, form.password.value);
-		NotificationService.notify("Registered successfully!", "green");
-		setTimeout(() => {
-			window.location.href = "genresChoice.html";
-		}, 1000);
-	} catch (error) {
-		NotificationService.notify(error.message, "red");
-		console.error(error.message);
-	}
+	const username = form.username.value;
+	const email = form.email.value;
+	const password = form.password.value;
+	await apiClient
+		.register(username, email, password)
+		.then(() => {
+			NotificationService.notify("Registered successfully!", "green");
+			setTimeout(() => {
+				window.location.href = "genresChoice.html";
+			}, 1000);
+		})
+		.catch((error) => {
+			NotificationService.notify(error.message, "red");
+			console.error(error.message);
+		});
 });

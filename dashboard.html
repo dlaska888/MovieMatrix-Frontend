@@ -12,25 +12,59 @@
   <link href="https://fonts.cdnfonts.com/css/amazon-ember" rel="stylesheet">
 </head>
 
-<body>
+<body class="position-relative">
+  <nav class="navbar navbar-expand-lg bg-body-tertiary position-absolute w-100 z-3 p-0 hide-desktop">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">
+        <img src="/common/assets/svg/movie-matrix_logo.svg" alt="Logo" width="50" height="50"
+          class="d-inline-block align-text-top">
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-home-btn nav-btn active"><i class="bi bi-house"></i> Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-discover-btn nav-btn"><i class="bi bi-compass"></i> Discover</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-favourites-btn nav-btn"><i class="bi bi-star"></i> Favourites</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-watched-btn nav-btn"><i class="bi bi-clock"></i> Watched</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-my-profile-btn nav-btn"><i class="bi bi-person"></i> My Profile</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-logout-btn logout"><i class="bi bi-arrow-right-square"></i></i> Sign out</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
   <div class="sidebar p-3 hide-mobile">
     <div class="logo">
       <img src="common/assets/svg/movie-matrix_logo.svg" class="img-fluid rounded-top" alt="Logo" />
     </div>
     <div class="menu">
       <div class="menu-upper">
-        <a id="nav-home-btn" class="nav-btn active"><i class="bi bi-house"></i> Home</a>
-        <a id="nav-discover-btn" class="nav-btn"><i class="bi bi-compass"></i> Discover</a>
-        <a id="nav-favourites-btn" class="nav-btn"><i class="bi bi-star"></i> Favourites</a>
-        <a id="nav-watched-btn" class="nav-btn"><i class="bi bi-clock"></i> Watched</a>
+        <a class="nav-home-btn nav-btn active"><i class="bi bi-house"></i> Home</a>
+        <a class="nav-discover-btn nav-btn"><i class="bi bi-compass"></i> Discover</a>
+        <a class="nav-favourites-btn nav-btn"><i class="bi bi-star"></i> Favourites</a>
+        <a class="nav-watched-btn nav-btn"><i class="bi bi-clock"></i> Watched</a>
       </div>
       <div class="menu-bottom">
-        <a id="nav-my-profile-btn" class="nav-btn"><i class="bi bi-person"></i> My Profile</a>
-        <a id="nav-logout-btn" class="nav-btn logout"><i class="bi bi-arrow-right-square"></i></i> Sign out</a>
+        <a class="nav-my-profile-btn nav-btn"><i class="bi bi-person"></i> My Profile</a>
+        <a class="nav-logout-btn logout"><i class="bi bi-arrow-right-square"></i></i> Sign out</a>
       </div>
     </div>
   </div>
-  <div id="page-content" class="page-content flex-column pt-4 pb-2"></div>
+  <div id="page-content" class="page-content flex-column pt-5 pt-md-4 pb-2 mt-5 mt-md-0"></div>
   <div class="toast-container position-fixed top-0 end-0 p-3"></div>
   <div class="preloader">
     <img src="/common/assets/svg/spinner.svg" alt="spinner">

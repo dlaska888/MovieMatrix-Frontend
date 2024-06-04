@@ -1,10 +1,8 @@
-import MockUserAPI from "../mock/MockUserApi.js";
-
-class ApiClient {
-	constructor() {
+class TmdbApiClient {
+	constructor(user) {
 		this.apiKey = "416e798ec964e2b8b76a4e719640abbb";
 		this.baseUrl = "https://api.themoviedb.org/3";
-		this.userApi = new MockUserAPI();
+		this.user = user;
 	}
 
 	async getPopularMovies(page = 1) {
@@ -98,29 +96,29 @@ class ApiClient {
 	}
 
 	async #getResponse(url, page = 1) {
-		const user = this.userApi.getCurrentUser();
 		const response = await fetch(
-			url + `api_key=${this.apiKey}&page=${page}&region=${user.region}`
+			url + `api_key=${this.apiKey}&page=${page}&region=PL`
 		);
+
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
 		}
+
 		const data = await response.json();
 		return data;
 	}
 
 	async #getResponseWithFilter(url, page = 1) {
-		const data = await this.#getResponse(url, page);
-		const user = this.userApi.getCurrentUser();
+		const data = await this.#getResponse( url, page);
 		const filteredData = data.results.filter(
 			(movie) =>
-				!user.seenMovies.includes(movie.id) &&
-				!user.movies.includes(movie.id) &&
-				!user.favouriteMovies.includes(movie.id)
+				!this.user.seenMovies.includes(movie.id) &&
+				!this.user.moviePreferences.includes(movie.id) &&
+				!this.user.favouriteMovies.includes(movie.id)
 		);
 
 		return { results: filteredData };
 	}
 }
 
-export default ApiClient;
+export default TmdbApiClient;

@@ -36,7 +36,15 @@ body {
 			margin-top: auto;
 		}
 
-		a {
+		
+		.user-info {
+			color: #00c2ff !important;
+		}
+	}
+}
+
+.sidebar, .navbar{
+	a {
 			display: block;
 			color: #00c2ff;
 			padding: 10px 15px;
@@ -51,10 +59,6 @@ body {
 				margin-right: 10px;
 			}
 		}
-		.user-info {
-			color: #00c2ff !important;
-		}
-	}
 }
 
 .page-content,
@@ -110,10 +114,11 @@ body {
 		justify-content: space-evenly;
 		max-width: 100%;
 		overflow-x: scroll;
+		min-height: 50px;
 
 		.option {
 			width: 200px;
-			min-width: 100px;
+			min-width: 120px;
 			text-align: center;
 			background-color: #1a1717;
 			border-color: #00c2ff;

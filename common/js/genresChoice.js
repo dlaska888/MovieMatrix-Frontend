@@ -1,18 +1,25 @@
-import ApiClient from "./helpers/ApiClient.js";
-import MockUserAPI from "./mock/MockUserApi.js";
 import NotificationService from "./helpers/NotificationService.js";
+import TmdbApiClient from "./api/TmdbApiClient.js";
+import UserApiClient from "./api/UserApiClient.js";
 
 const GenresChoice = (function () {
-	const client = new ApiClient();
-	const userApi = MockUserAPI.getInstance();
+	const userApi = new UserApiClient();
+	let tmdbApi = null;
 	let selectedGenres = [];
 
-	function init() {
-		client
+	async function init() {
+		if (!await userApi.isUserLoggedIn()) {
+			window.location.href = "login.html";
+			return;
+		}
+
+		const user = await userApi.getCurrentUser();
+		tmdbApi = new TmdbApiClient(user);
+		tmdbApi
 			.getGenreList()
 			.then((res) => {
 				displayGenres(res.genres);
-				userApi.getCurrentUser().genres.forEach((genreId) => {
+				user.categories.forEach((genreId) => {
 					selectGenre(genreId);
 				});
 			})
@@ -34,20 +41,24 @@ const GenresChoice = (function () {
 				return;
 			}
 
-			const user = userApi.getCurrentUser();
-			user.genres = selectedGenres;
-			userApi.updateUser(user.id, user);
-
-			NotificationService.notify("Genres saved successfully!", "green");
-			setTimeout(() => {
-				if (user.firstTimeLogin) {
-					window.location.href = "moviesChoice.html";
-					user.firstTimeLogin = false;
-					userApi.updateUser(user.id, user);
-				} else {
-					window.location.href = "dashboard.html";
-				}
-			}, 1000);
+			userApi
+				.updateGenres(selectedGenres)
+				.then(() => {
+					NotificationService.notify(
+						"Genres saved successfully!",
+						"green"
+					);
+					setTimeout(() => {
+						window.location.href = "moviesChoice.html";
+					}, 1000);
+				})
+				.catch((error) => {
+					console.error("Error:", error);
+					NotificationService.notify(
+						"An error occurred. Please try again later.",
+						"red"
+					);
+				});
 		});
 	}
 
@@ -84,8 +95,7 @@ const GenresChoice = (function () {
 			});
 
 			const path = `../../common/assets/img/genres`;
-			genreCard.firstElementChild.style.backgroundImage = 
-			`url(${path}/${genre.id}.jpg), url(${path}/${genre.id}.png), url(${path}/${genre.id}.webp), url(${path}/${genre.id}.jpeg), url(${path}/default.jpg)`;
+			genreCard.firstElementChild.style.backgroundImage = `url(${path}/${genre.id}.jpg), url(${path}/${genre.id}.png), url(${path}/${genre.id}.webp), url(${path}/${genre.id}.jpeg), url(${path}/default.jpg)`;
 
 			genreList.appendChild(genreCard);
 		});
@@ -112,4 +122,4 @@ const GenresChoice = (function () {
 
 export default GenresChoice;
 
-GenresChoice.init();
+await GenresChoice.init();

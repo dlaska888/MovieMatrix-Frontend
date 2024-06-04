@@ -1,35 +1,39 @@
-import ApiClient from "./helpers/ApiClient.js";
-import MockUserAPI from "./mock/MockUserApi.js";
 import NotificationService from "./helpers/NotificationService.js";
 import MovieListBuilder from "./helpers/MovieListBuilder.js";
+import TmdbApiClient from "./api/TmdbApiClient.js";
+import UserApiClient from "./api/UserApiClient.js";
 
 const MoviesChoice = (function () {
-	const client = new ApiClient();
-	const userApi = MockUserAPI.getInstance();
-	let selectedMoviesIds = [];
+	const userApi = new UserApiClient();
+	let tmdbApi = null;
+	let selectedMovieIds = [];
 	let loading = false;
 	let searchTimer = null;
 
-	function init() {
-		const user = userApi.getCurrentUser();
-		if (!user) {
+	async function init() {
+		if (!(await userApi.isUserLoggedIn())) {
 			window.location.href = "login.html";
 			return;
 		}
 
-		this.selectedMoviesIds = user.movies;
+		const user = await userApi.getCurrentUser();
+		tmdbApi = new TmdbApiClient(user);
 
-		client
-			.getMoviesByGenres(user.genres)
+		this.selectedMoviesIds = user.moviePreferences;
+
+		tmdbApi
+			.getMoviesByGenres(user.categories)
 			.then(async (res) => {
-				const selectedMovies = await client.getMoviesByIds(user.movies);
+				const selectedMovies = await tmdbApi.getMoviesByIds(
+					user.moviePreferences
+				);
 				renderMovies(selectedMovies.concat(res.results));
 				selectedMovies.forEach((movie) => {
 					selectMovie(movie.id);
 				});
 				const movieListBuilder = new MovieListBuilder((page) => {
 					fetchAndAddMovies(
-						client.getMoviesByGenres(user.genres, page)
+						tmdbApi.getMoviesByGenres(user.categories, page)
 					);
 				}, 2);
 				document
@@ -49,14 +53,24 @@ const MoviesChoice = (function () {
 	function initSaveButton() {
 		const saveButton = document.getElementById("save-btn");
 		saveButton.addEventListener("click", () => {
-			const user = userApi.getCurrentUser();
-			user.movies = selectedMoviesIds;
-			userApi.updateUser(user.id, user);
-
-			NotificationService.notify("Movies saved successfully!", "green");
-			setTimeout(() => {
-				window.location.href = "dashboard.html";
-			}, 1000);
+			userApi
+				.updatePreferenceMovies(selectedMovieIds)
+				.then(() => {
+					NotificationService.notify(
+						"Genres saved successfully!",
+						"green"
+					);
+					setTimeout(() => {
+						window.location.href = "dashboard.html";
+					}, 1000);
+				})
+				.catch((error) => {
+					console.error("Error:", error);
+					NotificationService.notify(
+						"An error occurred. Please try again later.",
+						"red"
+					);
+				});
 		});
 	}
 
@@ -77,62 +91,59 @@ const MoviesChoice = (function () {
 	}
 
 	async function search(query) {
-		if (loading) {
-			return;
-		}
+		if (loading) return;
 
 		loading = true;
 		query = query.trim();
 		clearMovies();
+
 		try {
-			const user = userApi.getCurrentUser();
-			const selectedMovies = await client.getMoviesByIds(
-				selectedMoviesIds
+			const user = await userApi.getCurrentUser();
+			const selectedMovies = await tmdbApi.getMoviesByIds(
+				selectedMovieIds
 			);
+			const movieContainer = document.querySelector("#movies-container");
+			movieContainer.replaceWith(movieContainer.cloneNode(true));
 
-			const movieList = document.querySelector("#movies-container");
-			movieList.replaceWith(movieList.cloneNode(true));
-
+			let res;
 			if (!query) {
-				const res = await client.getMoviesByGenres(user.genres);
+				res = await tmdbApi.getMoviesByGenres(user.categories);
 				renderMovies(selectedMovies.concat(res.results));
 				selectedMovies.forEach((movie) => {
 					selectMovie(movie.id);
 				});
-
-				const movieListBuilder = new MovieListBuilder((page) => {
-					console.log("query", query);
-					fetchAndAddMovies(client.getPopularMovies(page));
-				}, 2);
-
-				movieList.addEventListener("scroll", () => {
-					movieListBuilder.handleScroll();
-				});
 			} else {
-				const res = await client.getMoviesBySearch(query);
+				res = await tmdbApi.getMoviesBySearch(query);
 				renderMovies(res.results);
-				res.results.forEach((movie) => {
-					if (selectedMoviesIds.includes(movie.id)) {
-						selectMovie(movie.id);
-					}
-				});
+			}
 
-				const movieListBuilder = new MovieListBuilder((page) => {
-					fetchAndAddMovies(client.getMoviesBySearch(page).results);
-				}, 2);
-				
-				movieList.addEventListener("scroll", () => {
+			const movieListBuilder = new MovieListBuilder((page) => {
+				if (!query) {
+					fetchAndAddMovies(tmdbApi.getPopularMovies(page));
+				} else {
+					fetchAndAddMovies(tmdbApi.getMoviesBySearch(query, page));
+				}
+			}, 2);
+
+			document
+				.querySelector("#movies-container")
+				.addEventListener("scroll", () => {
 					movieListBuilder.handleScroll();
 				});
-			}
 		} finally {
 			loading = false;
 		}
 	}
 
 	function fetchAndAddMovies(apiCall) {
+		
 		apiCall
 			.then((res) => {
+				if (res.results.length === 0) {
+					document.querySelector("#loader").classList.add("d-none");
+					console.log("sdfasdf")
+					return;
+				}
 				renderMovies(res.results);
 			})
 			.catch((error) => {
@@ -169,12 +180,12 @@ const MoviesChoice = (function () {
 			const card = movieCard.querySelector(".card");
 			card.style.backgroundImage = `url(https://image.tmdb.org/t/p/w300${movie.poster_path})`;
 			card.addEventListener("click", () => {
-				if (selectedMoviesIds.includes(movie.id)) {
+				if (selectedMovieIds.includes(movie.id)) {
 					unselectMovie(movie.id);
 					return;
 				}
 
-				if (selectedMoviesIds.length >= 5) {
+				if (selectedMovieIds.length >= 5) {
 					NotificationService.notify(
 						"Please select at most 5 movies",
 						"red"
@@ -190,19 +201,19 @@ const MoviesChoice = (function () {
 	}
 
 	function selectMovie(movieId) {
-		if (!selectedMoviesIds.includes(movieId)) {
-			selectedMoviesIds.push(movieId);
+		if (!selectedMovieIds.includes(movieId)) {
+			selectedMovieIds.push(movieId);
 		}
 		document.getElementById(`card-${movieId}`).classList.add("selected");
 		document.getElementById("movie-counter").innerHTML =
-			selectedMoviesIds.length;
+			selectedMovieIds.length;
 	}
 
 	function unselectMovie(movieId) {
-		selectedMoviesIds.splice(selectedMoviesIds.indexOf(movieId), 1);
+		selectedMovieIds.splice(selectedMovieIds.indexOf(movieId), 1);
 		document.getElementById(`card-${movieId}`).classList.remove("selected");
 		document.getElementById("movie-counter").innerHTML =
-			selectedMoviesIds.length;
+			selectedMovieIds.length;
 	}
 
 	return {
@@ -212,4 +223,4 @@ const MoviesChoice = (function () {
 
 export default MoviesChoice;
 
-MoviesChoice.init();
+await MoviesChoice.init();

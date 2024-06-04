@@ -1,14 +1,14 @@
-import ApiClient from "../helpers/ApiClient.js";
-import MockUserAPI from "../mock/MockUserApi.js";
 import Dashboard from "./dashboard.js";
+import UserApiClient from "../api/UserApiClient.js";
+import ApiClient from "../api/TmdbApiClient.js";
 
 const Favourites = (function () {
 	const client = new ApiClient();
-	const userApi = new MockUserAPI();
+	const userApi = new UserApiClient();
 
-	function init() {
+	async function init() {
 		Dashboard.clearPageContent();
-		const user = userApi.getCurrentUser();
+		const user = await userApi.getCurrentUser();
 
 		client
 			.getMoviesByIds(user.favouriteMovies)
