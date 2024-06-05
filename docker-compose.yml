@@ -1,0 +1,6 @@
+services:
+  web:
+    build: .
+    platform: linux/amd64
+    ports:
+      - 443:80

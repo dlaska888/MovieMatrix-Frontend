@@ -28,7 +28,7 @@ class UserApiClient {
 	}
 
 	async register(username, email, password) {
-		return fetch(`${ApiEndpoints.register}`, {
+		return fetch(ApiEndpoints.register, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",

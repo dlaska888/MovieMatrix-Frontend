@@ -1,5 +1,5 @@
 class ApiEndpoints {
-    static baseUrl = 'http://localhost:8082/api/v1';
+    static baseUrl = 'http://4.234.9.79:8080/api/v1';
     static register = `${ApiEndpoints.baseUrl}/auth/register`;
     static login = `${ApiEndpoints.baseUrl}/auth/authenticate`;
     static logout = `${ApiEndpoints.baseUrl}/auth/logout`;
